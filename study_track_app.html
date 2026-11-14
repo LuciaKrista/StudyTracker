@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Track - Lucia</title>
+<style>
+  :root{
+    --bg:#0b0d17; --card:rgba(255,255,255,.05); --card-solid:#151827; --text:#e8eaf6; --muted:#8b90a8;
+    --border:rgba(255,255,255,.09); --accent:#6366f1; --accent2:#8b5cf6; --accent-soft:rgba(99,102,241,.14);
+    --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --glow:0 0 24px rgba(99,102,241,.35);
+    --shadow:0 8px 32px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(90px);opacity:.35;pointer-events:none}
+  body::before{width:520px;height:520px;background:#4338ca;top:-140px;left:-120px;animation:float1 22s ease-in-out infinite alternate}
+  body::after{width:460px;height:460px;background:#0d9488;bottom:-160px;right:-100px;animation:float2 26s ease-in-out infinite alternate}
+  @keyframes float1{from{transform:translate(0,0)}to{transform:translate(120px,80px)}}
+  @keyframes float2{from{transform:translate(0,0)}to{transform:translate(-100px,-70px)}}
+  #app{display:flex;min-height:100vh}
+  nav{width:210px;background:rgba(255,255,255,.04);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;backdrop-filter:blur(14px)}
+  .logo{font-weight:800;font-size:18px;padding:6px 10px 16px;background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.5px}
+  nav button{display:block;width:100%;text-align:left;padding:10px 12px;border:0;background:transparent;border-radius:10px;font-size:14px;cursor:pointer;color:var(--muted);transition:all .2s ease}
+  nav button:hover{background:var(--accent-soft);color:var(--text);transform:translateX(4px)}
+  nav button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:600;box-shadow:var(--glow);transform:none}
+  .side-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:10px}
+  .side-bottom button{font-size:13px;color:var(--muted)}
+  .syncwrap{max-width:520px}
+  .syncrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .syncstat{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px}
+  .syncstat.ok{color:var(--positive)}
+  .syncstat.err{color:var(--negative)}
+  main{flex:1;padding:24px;max-width:1100px}
+  main>*{animation:fadeUp .4s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);backdrop-filter:blur(12px);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;animation:fadeUp .4s ease both}
+  .card:hover{transform:translateY(-3px);border-color:rgba(129,140,248,.45);box-shadow:0 10px 36px rgba(99,102,241,.22)}
+  .card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.1s}.card:nth-child(4){animation-delay:.15s}.card:nth-child(5){animation-delay:.2s}.card:nth-child(6){animation-delay:.25s}
+  .card .k{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .card .v{font-size:26px;font-weight:800;background:linear-gradient(90deg,#c7d2fe,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .card .n{font-size:12px;color:var(--muted);margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);backdrop-filter:blur(12px);transition:border-color .2s ease}
+  .panel:hover{border-color:rgba(129,140,248,.3)}
+  .panel h3{margin:0 0 12px;font-size:15px}
+  .bar{height:10px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bar>span{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#6366f1,#a78bfa);animation:grow .8s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes grow{from{width:0 !important}}
+  .row{display:flex;align-items:center;gap:10px;margin:8px 0}
+  .row .name{width:150px;font-size:13px;font-weight:600;flex-shrink:0}
+  .row .meta{font-size:12px;color:var(--muted);width:110px;text-align:right;flex-shrink:0}
+  .row .bar{flex:1}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
+  .pill.week{background:linear-gradient(135deg,#f59e0b33,#f59e0b55);color:#fcd34d;border:1px solid #f59e0b44}
+  .pill.soon{background:linear-gradient(135deg,#3b82f633,#3b82f655);color:#93c5fd;border:1px solid #3b82f644}
+  .pill.later{background:rgba(255,255,255,.06);color:#cbd5e1;border:1px solid var(--border)}
+  .pill.overdue{background:linear-gradient(135deg,#ef444433,#ef444455);color:#fca5a5;border:1px solid #ef444444;animation:pulse 1.6s ease-in-out infinite}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  tbody tr,table tr:not(:first-child){transition:background .15s ease}
+  table tr:not(:first-child):hover{background:rgba(255,255,255,.03)}
+  .btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s ease;box-shadow:0 2px 10px rgba(99,102,241,.25)}
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--glow)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .btn.secondary{background:var(--accent-soft);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);box-shadow:none}
+  .btn.secondary:hover{background:rgba(99,102,241,.22);box-shadow:0 2px 14px rgba(99,102,241,.2)}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);box-shadow:none}
+  .btn.ghost:hover{border-color:rgba(129,140,248,.4);color:var(--text);box-shadow:none}
+  .btn:disabled{opacity:.45;cursor:default}
+  input,select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:rgba(255,255,255,.06);color:var(--text);transition:border-color .2s ease,box-shadow .2s ease}
+  input:focus,select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.25)}
+  select option{background:#151827;color:var(--text)}
+  input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.7)}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  .form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:14px}
+  .form>div{display:flex;flex-direction:column}
+  .timer-display{font-size:64px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:10px 0;background:linear-gradient(90deg,#c7d2fe,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(99,102,241,.35))}
+  .timer-phase{text-align:center;color:var(--muted);font-size:13px;margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase}
+  .timer-btns{display:flex;gap:10px;justify-content:center;margin-bottom:14px}
+  .weekhead{display:grid;grid-template-columns:60px repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .weekhead .d{text-align:center;font-size:12px;color:var(--muted)}
+  .weekhead .d b{display:block;color:var(--text);font-size:14px}
+  .weekhead .d.today{color:#a5b4fc;text-shadow:0 0 12px rgba(99,102,241,.6)}
+  .pgrid{display:grid;position:relative;grid-template-columns:60px repeat(7,1fr);grid-auto-rows:34px;gap:6px}
+  .babs{position:absolute;left:1px;right:1px;pointer-events:none}
+  .babs .block{pointer-events:auto;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start}
+  .daycol{position:relative;pointer-events:none;grid-column:span 1}
+  .bslot{position:relative;z-index:2;display:flex;flex-direction:column;pointer-events:none;padding-right:2px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(8,10,20,.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:60;animation:fadeIn .2s ease both}
+  .modal{background:rgba(21,24,39,.92);border:1px solid rgba(129,140,248,.25);border-radius:16px;padding:20px;width:min(480px,92vw);max-height:86vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.5),var(--glow);animation:popIn .25s cubic-bezier(.2,.8,.2,1) both;backdrop-filter:blur(18px)}
+  body.light .modal{background:rgba(255,255,255,.95)}
+  .modal h3{margin:0 0 14px}
+  .dcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);backdrop-filter:blur(12px);transition:border-color .2s ease}
+  .dcard:hover{border-color:rgba(129,140,248,.3)}
+  .dhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .dhead b{font-size:14px}
+  .dmeta{font-size:12px;color:var(--muted);margin-left:auto}
+  .ddesc{font-size:13px;color:var(--muted);margin:8px 0;line-height:1.45}
+  .dchkhead{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:10px}
+  .check-row{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .check-row input{flex:1;padding:6px 10px;font-size:12px}
+  .ckbox{width:18px;height:18px;border:1.5px solid var(--border);border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .15s ease;color:#fff}
+  .ckbox:hover{border-color:#6366f1}
+  .ckbox.on{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-color:transparent}
+  .cktext{flex:1;font-size:13px;cursor:text;border-radius:6px;padding:2px 6px;transition:background .15s ease}
+  .cktext:hover{background:rgba(255,255,255,.06)}
+  .cktext.done{opacity:.55;text-decoration:line-through}
+  .cknum{font-size:11px;color:var(--muted);width:18px;text-align:right;flex-shrink:0}
+  .cktarget{flex:0 0 58px;padding:4px 4px;font-size:11px;text-align:center}
+  .pill.mini{font-size:10px;padding:2px 7px;flex-shrink:0}
+  .ckedit{flex:1;padding:4px 8px;font-size:13px}
+  .ckarrow{cursor:pointer;color:var(--muted);font-size:11px;padding:0 2px;user-select:none;transition:color .15s ease}
+  .ckarrow:hover{color:var(--text)}
+  .today-block{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin:6px 0;background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s ease}
+  .today-block:hover{border-color:rgba(129,140,248,.4);transform:translateX(3px)}
+  .today-block.done{opacity:.5}
+  .today-block.done .tb-act{text-decoration:line-through}
+  .tb-time{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;width:92px;flex-shrink:0}
+  .tb-main{flex:1;min-width:0}
+  .tb-act{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tb-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tb-ck{width:22px;height:22px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s ease}
+  .tb-ck:hover{border-color:#6366f1}
+  .tb-ck.on{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-color:transparent}
+  .step-src{font-size:11px;color:var(--muted);margin:10px 0 2px;display:flex;align-items:center;gap:6px}
+  .step-src b{color:var(--text);font-size:12px}
+  .wkrow{display:flex;gap:8px;align-items:flex-start;margin:6px 0}
+  .wkd{font-size:12px;color:var(--muted);width:104px;flex-shrink:0;padding-top:2px;font-variant-numeric:tabular-nums}
+  .wkcard{flex:1;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--card);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+  .wkcard.cur{border-color:rgba(129,140,248,.55);box-shadow:0 0 20px rgba(99,102,241,.25)}
+  .wkcard .lt{font-size:13px;font-weight:700;margin-bottom:2px}
+  .wkcard .prep{font-size:12px;color:var(--muted);margin:2px 0}
+  .ntree{font-size:13px}
+  .nfolder{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s ease;font-weight:600}
+  .nfolder:hover{background:rgba(255,255,255,.05)}
+  .nfolder .arrow{transition:transform .2s ease;font-size:11px;color:var(--muted);width:12px}
+  .nfolder.open .arrow{transform:rotate(90deg)}
+  .nsub{margin-left:26px;border-left:1px solid var(--border);padding-left:8px}
+  .nsubfold{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;color:var(--muted);transition:all .15s ease}
+  .nsubfold:hover{background:rgba(255,255,255,.05);color:var(--text)}
+  .nsubfold.open{color:var(--text)}
+  .nsubfold .arrow{font-size:10px;width:10px;transition:transform .2s ease}
+  .nsubfold.open .arrow{transform:rotate(90deg)}
+  .neditor{margin:8px 0 4px 40px}
+  .neditor textarea{min-height:180px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.5}
+  .nmeta{font-size:11px;color:var(--muted);margin-top:4px}
+  .nsearch-result{padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin:6px 0;cursor:pointer;transition:all .15s ease;background:var(--card)}
+  .nsearch-result:hover{border-color:rgba(129,140,248,.4)}
+  .nsr-src{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .nsr-text{font-size:13px;line-height:1.4}
+  .nsr-text mark{background:rgba(251,191,36,.35);color:#fde68a;border-radius:3px;padding:0 2px}
+  body.light .nsr-text mark{color:#92400e}
+  .cgroup{margin:20px 0 10px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes popIn{from{opacity:0;transform:scale(.92) translateY(14px)}to{opacity:1;transform:none}}
+  textarea{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:rgba(255,255,255,.06);color:var(--text);min-height:72px;resize:vertical;font-family:inherit;width:100%;transition:border-color .2s ease,box-shadow .2s ease}
+  textarea:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.25)}
+  .bslot .block{min-height:26px;pointer-events:auto;overflow:hidden}
+  .phour{font-size:11px;color:var(--muted);text-align:right;padding:2px 4px}
+  .pcell{min-height:34px;border:1px dashed rgba(255,255,255,.12);border-radius:8px;padding:2px;cursor:pointer;transition:all .15s ease}
+  .pcell:hover{border-color:#6366f1;background:var(--accent-soft);transform:scale(1.03)}
+  .block{border-radius:6px;padding:3px 6px;font-size:11px;line-height:1.3;margin-bottom:3px;color:#fff;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:transform .15s ease}
+  .block:hover{transform:scale(1.03)}
+  .block small{display:block;opacity:.85;font-size:10px}
+  .block.done{opacity:.5;text-decoration:line-through}
+  .block .x{position:absolute;top:1px;right:3px;cursor:pointer;font-size:11px;opacity:.8}
+  .block .x:hover{opacity:1;transform:scale(1.2)}
+  .swatch{width:14px;height:14px;border-radius:4px;display:inline-block;vertical-align:-2px;margin-right:6px;box-shadow:0 0 8px currentColor}
+  .empty{color:var(--muted);font-size:13px;padding:12px;text-align:center}
+  canvas{max-width:100%}
+  .navbtns{display:flex;gap:8px;margin-bottom:12px}
+  .session-list{font-size:13px}
+  .session-list .row{margin:4px 0}
+  .del{cursor:pointer;color:var(--muted);font-size:14px;transition:all .15s ease}
+  .del:hover{color:var(--bad);transform:scale(1.25)}
+  ::-webkit-scrollbar{width:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:6px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(129,140,248,.5)}
+  ::selection{background:rgba(99,102,241,.4)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  @media(max-width:760px){nav{width:64px;padding:12px 6px}.logo{font-size:0;padding:6px 0 14px;text-align:center}.logo::before{content:"ST";font-size:16px;-webkit-text-fill-color:initial;background:none;color:#a5b4fc}nav button{font-size:0;padding:10px 6px;text-align:center}nav button::after{font-size:11px;display:block}#nav-today::after{content:"Now"}#nav-week::after{content:"Week"}#nav-rooster::after{content:"Rooster"}#nav-dashboard::after{content:"Home"}#nav-planner::after{content:"Plan"}#nav-timer::after{content:"Timer"}#nav-deadlines::after{content:"Due"}#nav-xams::after{content:"Exam"}#nav-courses::after{content:"Course"}#nav-notes::after{content:"Notes"}#btn-export::after{content:"Share"}#btn-sync::after{content:"Sync"}#btn-import::after{content:"In"}#btn-reset::after{content:"Reset"}main{padding:14px}}
+
+  .timer-wrap{position:relative;width:250px;margin:12px auto}
+  .ringsvg{width:100%;display:block;transform:rotate(-90deg)}
+  .ringsvg circle{fill:none;stroke-width:10;stroke-linecap:round}
+  .ring-bg{stroke:rgba(255,255,255,.08)}
+  .ring-fg{stroke:url(#ringGrad);stroke-dasharray:628.3;stroke-dashoffset:628.3;transition:stroke-dashoffset .4s linear;filter:drop-shadow(0 0 8px rgba(99,102,241,.55))}
+  .timer-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;margin:0}
+  .confetti{position:fixed;width:8px;height:13px;border-radius:2px;z-index:99;pointer-events:none;animation:confetti-burst 1s ease-out forwards}
+  @keyframes confetti-burst{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 150px)) rotate(var(--rot)) scale(.6);opacity:0}}
+  body.light{--bg:#eef1f9;--card:#ffffff;--text:#1e2233;--muted:#646a84;--border:rgba(20,24,50,.12);--accent-soft:rgba(99,102,241,.1);--shadow:0 8px 24px rgba(30,34,60,.08);--glow:0 0 20px rgba(99,102,241,.25)}
+  body.light::before,body.light::after{opacity:.16}
+  body.light nav{background:rgba(255,255,255,.75)}
+  body.light .card .v,body.light .timer-display{background:linear-gradient(90deg,#4338ca,#0891b2);-webkit-background-clip:text;background-clip:text}
+  body.light .ring-bg{stroke:rgba(20,24,50,.1)}
+  body.light table tr:not(:first-child):hover{background:rgba(20,24,50,.03)}
+  body.light select option{background:#fff;color:#1e2233}
+  body.light input[type="date"]::-webkit-calendar-picker-indicator,body.light input[type="time"]::-webkit-calendar-picker-indicator{filter:none}
+  body.light .pcell{border-color:rgba(20,24,50,.15)}
+  body.light .pill.later{background:rgba(20,24,50,.05);color:#475569}
+  @media(max-width:760px){#btn-theme::after{content:"Theme"}}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav>
+    <div class="logo">Study Track <span style="font-size:10px;vertical-align:super;opacity:.55">v3</span></div>
+    <button id="nav-today" onclick="go('today')">Today</button>
+    <button id="nav-week" onclick="go('week')">Weekplan</button>
+    <button id="nav-rooster" onclick="go('rooster')">Rooster</button>
+    <button id="nav-dashboard" onclick="go('dashboard')">Dashboard</button>
+    <button id="nav-planner" onclick="go('planner')">Planner</button>
+    <button id="nav-timer" onclick="go('timer')">Timer</button>
+    <button id="nav-deadlines" onclick="go('deadlines')">Deadlines</button>
+    <button id="nav-xams" onclick="go('xams')">Exams &amp; Assignments</button>
+    <button id="nav-courses" onclick="go('courses')">Courses</button>
+    <button id="nav-notes" onclick="go('notes')">Notes</button>
+    <button id="nav-sync" onclick="go('sync')">Sync</button>
+    <div class="side-bottom">
+      <button id="btn-export" onclick="exportData()">Backup delen</button>
+      <button id="btn-sync" onclick="go('sync')">Sync</button>
+    <button id="btn-import" onclick="document.getElementById('import-file').click()">Import</button>
+      <button id="btn-reset" onclick="resetData()">Reset</button>
+      <button id="btn-theme" onclick="toggleTheme()">Theme</button>
+    </div>
+  </nav>
+  <main><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)"></main>
+</div>
+<script>
+const KEY="studytrack_v2", DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const PALETTE=["#4f46e5","#10b981","#f59e0b","#ef4444","#3b82f6","#a855f7","#14b8a6","#f97316"];
+
+let state=null, view="dashboard";
+
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function parseD(s){const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function addDays(s,n){const d=parseD(s);d.setDate(d.getDate()+n);return fmtD(d);}
+function fmtD(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function mondayOf(s){const d=parseD(s);return fmtD(new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)));}
+function dayName(s){return DAYS[(parseD(s).getDay()+6)%7];}
+function dLabel(s){return String(parseD(s).getDate()).padStart(2,"0")+"-"+String(parseD(s).getMonth()+1).padStart(2,"0");}
+
+const WP=[["ipg_c1", "2.1", [["HC Psychologie & Gezondheid (2 lesuur)", [["Lees H1 Lemmers & De Greeff (introductie; ken salutogenese vs. pathogenese)"]]], ["HC Positieve Gezondheid (45 min) - week 1 ONLINE", [["Lees H1 Dierx (Positieve Gezondheid)"], ["Bekijk de Huber-video vanaf 1:32 t/m 2:05"]]], ["Werkcollege (2 1/4 uur)", [["Lees H1 Lemmers (ter voorbereiding op de verwerking)"]]], ["Posteropdracht", [["Vorm een groep van 4-5 studenten en schrijf in op Brightspace"], ["Kies met de docent jullie postermarkt-week (2.6 of 2.7)"], ["Zoek een client: 16 jaar of ouder, gezonde populatie (twijfel? vraag docent)"], ["Laat de client het toestemmingsformulier ondertekenen (laat het aan de docent zien)", "d2", "m2_2"], ["Plan het interview met de client in voor week 2.3"]]]]], ["ipg_c1", "2.2", [["HC Psychologie & Gezondheid", [["Lees H2 Lemmers en H3 Dierx (determinanten van gedrag)", "d1", "m1_3"]]], ["HC Positieve Gezondheid", [["Lees H7 en H10 Lemmers (lichaamsfuncties; smaaklessen en 10.3.1 overslaan)"]]], ["Werkcollege", [["Lees H1 Dierx en bekijk de Huber-video (stof van week 1)"]]], ["Posteropdracht", [["Maak het interviewschema: spinnenweb-bespreking (het andere gesprek), veranderwens formuleren, ASE-model", "d2", "m2_3"], ["Laat de client het spinnenweb invullen en meenemen naar het interview"], ["Toestemmingsformulier ondertekend en meegenomen"]]]]], ["ipg_c1", "2.3", [["HC Psychologie & Gezondheid", [["Lees H3 en H4 Lemmers (beleid en wetgeving)", "d1", "m1_4"]]], ["HC Positieve Gezondheid", [["Lees H6.2 en H6.3 Lemmers + het gearceerde deel van Hosper & Van Loenen (dagelijks functioneren)"]]], ["Werkcollege", [["Herkijk de stof van week 2: H2 Lemmers, H3 Dierx, H7/H10"]]], ["Posteropdracht", [["INTERVIEW AFNEMEN (gepland in week 2.1)", "d2", "m2_4"], ["Begin met de vormgeving van de poster"]]]]], ["ipg_c1", "2.4", [["HC Psychologie & Gezondheid", [["Lees H1 Bannink (zelfmanagement en positieve psychologie; toepassingskaders hoeven niet)", "d1", "m1_5"]]], ["HC Positieve Gezondheid", [["Lees H11 Lemmers (mentaal welbevinden)"]]], ["Werkcollege", [["Lees de stof van week 3 (beleid + dagelijks functioneren)"], ["Optioneel: houd deze week de Feelee app bij en neem de resultaten mee naar werkcollege 5"]]], ["Posteropdracht", [["Verwerk het interview; vul posteronderdelen 1, 2 en 3 in"], ["Werk het ASE-model uit en neem het mee naar de les voor peerfeedback"]]]]], ["ipg_c1", "2.5", [["HC Psychologie & Gezondheid", [["Lees H5 en H6 Lemmers en H2 Dierx (interventie; motiverende gespreksvoering)", "d1", "m1_6"]]], ["HC Positieve Gezondheid", [["Lees H11 Streur-Kranenburg (zingeving)"]]], ["Werkcollege", [["Lees H11 Lemmers (ontspanning), H1 Bannink en de HC-dia's over zelfmanagement"], ["Neem je Feelee-resultaten mee naar het werkcollege"], ["Vul deze week elke avond het dankbaarheidsdagboek in (3 dingen); neem het volgende week mee"]]], ["Posteropdracht", [["Selecteer en onderbouw de interventie (loketgezondleven.nl, movisie.nl)", "d2", "m2_5"]]]]], ["ipg_c1", "2.6", [["HC Psychologie & Gezondheid", [["Lees H8, H9 en H12 Lemmers (middelengebruik)", "d1", "m1_7"]]], ["HC Positieve Gezondheid", [["Lees H1 Leeuwerke-Luiten (meedoen; blauwe kaders overslaan)"]]], ["Werkcollege", [["Lees de stof van week 5 (interventie + zingeving)"], ["POSTERMARKT 1: presenteert jouw groep? Poster drukken (A3) en vooraf inleveren via de link. Anders: werk de gespreksvragen door (tentamenvoorbereiding)"]]], ["Posteropdracht", [["Poster afmaken: veranderwens + gedragsanalyse + interventie"], ["Poster uploaden via de Brightspace-inleverlink voor de postermarkt", "d2", "m2_7"]]]]], ["ipg_c1", "2.7", [["HC Psychologie & Gezondheid (responsiecollege)", [["Neem je samenvattingen, aantekeningen en mindmaps door"]]], ["HC Positieve Gezondheid", [["Kwaliteit van leven: geen literatuur"]]], ["Werkcollege", [["Lees de stof van week 6"], ["POSTERMARKT 2: presenteert jouw groep nu? Poster drukken en vooraf inleveren"]]], ["Posteropdracht", [["Postermarkt 2: presenteer met de hele groep (indien jouw week)", "d2", "m2_8"]]]]], ["ipg_c1", "2.8", [["Toetsweek", [["Leer je samenvattingen en mindmaps door"], ["Oefen ASE-toepassingsvragen op casussen", "d1", "m1_10"], ["Tentamen IPG (zet de exacte datum uit het toetsrooster)"]]]]],["cnp_c1", "2.1", [["HC Cognitieve Psychologie & Neuropsychologie (intro)", [["Neem de module-informatie door"], ["Lees Schouppe & de Graef H1 (Cognitieve Psychologie) op hoofdlijnen", "d3", "m3_8"], ["Lees Kessels H3 (neuropsychologie in de praktijk) op hoofdlijnen", "d3", "m3_2"], ["Bekijk de video van deze week (YouTube-link op Brightspace)"], ["Werk de kennisclip-opdracht uit"]]]]],["cnp_c1", "2.2", [["HC Aandacht & Executieve Functies", [["Lees Kessels H9 (aandacht en executief functioneren)", "d3", "m3_5"]]], ["WC Cognitieve Psychologie & Neuropsychologie", [["Neem de HC-stof van week 2.1 door (Schouppe H1 + Kessels H3)"], ["Verwerking: argumentatie uitwerken/verbeteren met de handvatten uit de les"], ["Werkcollegestof komt eind van de week in de Bibliotheek: meelezen (open-vragen-stof)", "d3", "m3_9"]]]]],["cnp_c1", "2.3", [["HC Sensatie & Perceptie", [["Lees Zimbardo H3 (sensatie en perceptie)", "d3", "m3_7"]]], ["WC Aandacht & Executieve Functies", [["Neem de HC-stof van week 2.2 door (Kessels H9)"], ["Verwerking: CFQ-uitwerkingen en theorie (Bibliotheek) afronden"]]]]],["cnp_c1", "2.4", [["HC Beeldvorming hersenen", [["Lees Kessels H4 met de paginamap (p.108-112 en de technische PET/SPECT/MEG-delen overslaan)", "d3", "m3_3"], ["Bekijk kennisclip rtfMRI neurofeedback (geen toetsstof) en beschrijf doel + werking"], ["Lees de casusopdracht voor wc 2.6 door (link op Brightspace)"]]], ["WC Sensatie & Perceptie", [["Neem de HC-stof van week 2.3 door (Zimbardo H3); de wat- en waar-routes worden bekend verondersteld"], ["Verwerking: theorie (Bibliotheek) + argumentatie verder uitwerken"]]], ["Casusopdracht (groep van 4)", [["Plan met je groepje wanneer jullie de casusopdracht (incl. interview) uitvoeren"]]]]],["cnp_c1", "2.5", [["HC Plasticiteit, herstel & revalidatie", [["Lees Kessels H5 (plasticiteit, herstel en revalidatie)", "d3", "m3_6"], ["Bekijk kennisclip 'IQ van 145 maar hij kan zijn kamer nog niet opruimen' (geen toetsstof) en vat samen"]]], ["WC Beeldvorming", [["Neem de HC-stof van week 2.4 door (Kessels H4)"], ["Lees Kessels p.374-377 (licht THL en cognitieve klachten)"], ["Lees het Volkskrantartikel 'Een hersenscan ter geruststelling' (bron voor je argumentatie)"]]], ["Casusopdracht (groep van 4)", [["Werk de casusopdracht verder uit met je groepje (moet af zijn voor wc 2.6)"]]]]],["cnp_c1", "2.6", [["HC Geheugen", [["Lees Kessels H7 (geheugen)"], ["Kennisclip 1: 'How memories form and how we lose them' - noteer hoe herinneringen ontstaan en verdwijnen"], ["Kennisclip 2: TED-talk Loftus (false memories) - noteer minimaal 3 punten"]]], ["WC Plasticiteit, herstel & revalidatie (ICF-model)", [["CASUSOPDRACHT AFRONDEN (incl. interview) voor dit werkcollege"], ["Neem de HC-stof van week 2.5 door (Kessels H5)"], ["Verwerking: ICF-theorie (Bibliotheek) + eigen uitwerkingen afronden"]]]]],["cnp_c1", "2.7", [["WC oefen / responsie (open vragen)", [["Oefen met de structuur van de open vragen (A, B en C) en veelgemaakte fouten"], ["Oefen argumentatie en nakijken met de beoordelingsrubric", "d3", "m3_10"], ["Oefen-MC-vragen maken", "d3", "m3_10"]]]]],["cnp_c1", "2.8", [["HC vragen / responsie", [["Stel je openstaande inhoudelijke vragen over de hoofdstukken (geen presentatie deze week)"]]], ["WC (laatste bijeenkomst)", [["Stel vragen over de werkcollegestof en de voorbereiding op de open toetsvragen"], ["Leer alles door: 42 MC + 2 open vragen (zet de exacte toetsdatum uit het toetsrooster)", "d3", "m3_9"]]]]],["pro_c1", "2.1", [["OR Les 1 - Stap 1: probleemstelling, relevantie en opdrachtgever", [["Neem de module-informatie door"], ["Lees stap 1 van de opdrachtomschrijving + het voorbeeld van de onderzoeksopzet (Bibliotheek - Hulpmiddelen)"], ["Lees Baarda par. 2.1 (aanleiding) en 2.2 (probleemstelling)"], ["Verwerking: schrijf je groep in (Course Tools > Groups) en stel het samenwerkingscontract op"], ["Verwerking: maak een concreet plan binnen de groep en beschrijf stap 1 (60 min)", "d5", "m5_1"]]]]],["pro_c1", "2.2", [["OR Les 2 - Stap 2: doelstelling en onderzoeksvragen", [["Lees stap 2 van de opdrachtomschrijving + onderzoeksopzet-voorbeeld"], ["Lees Baarda par. 2.4 (doel- en vraagstelling)"], ["Verwerking: stel jullie doelstelling en onderzoeksvragen op en beschrijf ze in stap 2 (30 min)", "d5", "m5_2"]]], ["Excel Les 1 - invoeren van gegevens en frequentieanalyse", [["Lees Baarda par. 6.1 t/m 6.4"], ["Excel op je eigen laptop geinstalleerd? Zo niet: kennisclip 'Installeren van Excel' volgen"], ["Oortjes of koptelefoon meenemen naar de les"], ["In de les: 10 vragenlijsten invoeren (variabelenoverzicht + datamatrix), draaitabellen maken en de 4 vragen beantwoorden"], ["Antwoordencheck: getallen max. 2 decimalen, komma-notatie (5,48 / 5,4 / 5 / 5,02); foutloos = verder, anders aanvullende opdracht"], ["Verwerking: ALLE opdrachten van les 1 foutloos af vóór Excel les 2", "d4", "m4_1"]]]]],["pro_c1", "2.3", [["OR Les 3 - Stap 3 (voorlopig, detail volgt)", [["Stap 3: populatie/steekproef + informed consent en informatiebrief opstellen", "d5", "m5_3"]]], ["Excel Les 2 - uni- en bivariate analyses (voorlopig)", [["Opdrachten les 2 afronden via de Antwoordencheck", "d4", "m4_2"]]]]],["pro_c1", "2.4", [["OR Les 4 - Stap 4 (voorlopig)", [["Stap 4: vragenlijst samenstellen / gebruiksklaar maken", "d5", "m5_4"]]], ["Excel Les 3 - subsets en hercoderen (voorlopig)", [["Opdrachten les 3 afronden", "d4", "m4_3"]]]]],["pro_c1", "2.5", [["OR Les 5 - GO/NO GO pitch (voorlopig)", [["STREEFTARGET: onderzoeksopzet (stap 1-3) af + pitch voorbereid", "d5", "m5_5"]]], ["Excel Les 4 - homogeniteitsanalyse en variabele samenstellen (voorlopig)", [["Opdrachten les 4 afronden", "d4", "m4_4"]]]]],["pro_c1", "2.6", [["OR Les 6 - GO/NO GO vragenlijst (voorlopig)", [["STREEFTARGET: vragenlijst af en GO halen; bij GO meteen afname plannen", "d5", "m5_6"]]], ["Excel Les 5 - visualisaties (voorlopig)", [["Opdrachten les 5 afronden", "d4", "m4_5"]]]]],["pro_c1", "2.7", [["OR Les 7 - herkansing pitch/vragenlijst (voorlopig)", [["Indien NO GO: herkansing; anders: afnames draaien", "d5", "m5_7"]]], ["Excel Les 6 - herhaling (voorlopig)", [["Openstaande aanvullende opdrachten afmaken", "d4", "m4_6"]]]]],["pro_c1", "2.8", [["Exceltoets (voorlopig: exacte datum checken)", [["Excel-kennistoets: 22 vragen (7 MC + 15 rekenvragen), 55% grens; oefen met een databestand", "d4", "m4_7"]]]]],["pgt_c1", "2.1", [["Thema 8 - Intervisie & Situatie Verhelderen (G-schema)", [["VIDEO OPNEMEN: 10-15 min probleemverhelderend gesprek met tegenrolspeler + rol uit het rollendocument; vóór de bijeenkomst inleveren via de inleverlink", "d6", "m6_1"], ["Kijk je eigen video terug: selecteer max. 3 min fragment en noteer 1 gerichte feedbackvraag"], ["ALSNOG INLEVEREN: opdracht non-verbaal & aandachtgevend gedrag (thema 6, kwartiel 1) via de thema 6-inleverlink"], ["Check wanneer jouw intervisie-moment op de planning staat (vraag het schema aan je docent)"]]]]],["pgt_c1", "2.2", [["Thema 9 - Intervisie, vervolg G-schema & overgangen", [["VIDEO OPNEMEN: openingsfase compleet, alarmwoorden opvragen, overgangen, samenvatten en afsluiting; vóór de les inleveren", "d6", "m6_2"], ["Kijk terug: max. 5 min fragment + 1 of 2 feedbackvragen"], ["Aanbevolen: stappenplan G-schema (Bibliotheek, bij Thema 8) doornemen en thuis oefenen met verdiepend doorvragen (geen opname nodig)"]]]]],["pgt_c1", "2.3", [["Thema 10 - Intervisie & Evaluatieverslag", [["BELANGRIJK: lees het document over het categorieënsysteem van Neuteboom (we gaan er in de les mee aan de slag)"], ["VIDEO OPNEMEN: 10-15 min probleemverhelderend gesprek (eigen tegenrolspeler + rol): bij deze les hoort weer een eigen video; vóór de les inleveren", "d6", "m6_3"], ["Kijk terug: max. 5 min fragment + 1 of 2 feedbackvragen"], ["Verwerking: lees het voorbeeld met sterke en zwakke evaluatie en schrijf je vragen op voor de volgende les", "d7", "m7_1"]]]]],["pgt_c1", "2.4", [["Thema 11 - Intervisie & Stiltes Benutten", [["Luister de podcastaflevering over stiltes (vind je bij dit thema op Brightspace)"], ["VIDEO OPNEMEN: 10-15 min probleemverhelderend gesprek (eigen tegenrolspeler + rol): vóór de les inleveren", "d6", "m6_4"], ["Kijk terug: max. 5 min fragment + 1 of 2 feedbackvragen"], ["Verwerking: bekijk de video over wat stilte doet met mensen"]]]]],["pgt_c1", "2.5", [["Thema 12 - Verdieping parafraseren & reflecteren op gevoel", [["Maak een LETTERLIJK transcript van je intervisiefragment (wat zei de cliënt, wat zei jij)"], ["Beantwoord met je transcript: welke categorieën (E-in, E-ex, VO, ordening) herken je; welke gebruik je het meest; welke ontbreken; welke vraag gaf verdieping; welke was sturend; hoeveel E-in deed je"], ["Neem je bevindingen mee naar de les", "d6", "m6_5"]]]]],["pgt_c1", "2.6", [["Thema 13 - Toetsvoorbereiding & behoeftegerichte bijeenkomst (laatste les)", [["Geen specifieke voorbereiding: breng je laatste prangende vragen mee; deze les is je generale repetitie"], ["TOETSROL KIEZEN en tegenrolspeler regelen (16 jaar of ouder) voor de toetsvideo", "d6", "m6_6"], ["Test het opnemen en inleveren van de video alvast (bijv. via een oude inleverlink)"], ["Verwerking: maak reflectie-notities voor je evaluatieverslag (wat ging goed, wat beter)", "d7", "m7_2"]]]]],["pgt_c1", "2.7", [["Opname-week (geen les / toetsvoorbereiding)", [["PROEFOPNAME maken en zelf beoordelen met de rubric; Kaltura-workflow uitproberen", "d6", "m6_7"], ["Definitieve toetsvideo opnemen: 10-15 min, Kaltura, niet knippen, 90-graden opstelling, gezicht+bovenlichaam continu in beeld"], ["Evaluatieverslag schrijven volgens het format", "d7", "m7_3"]]]]],["pgt_c1", "2.8", [["INLEVERDEADLINE (week 2.8)", [["INLEVEREN: video + evaluatieverslag via dezelfde inleverlink vóór VRIJDAG 15 JANUARI 17:00. Te laat = te laat (17:01 wordt niet nagekeken)", "d6", "m6_8"]]]]],["ppo_c1", "2.1", [["Les 2.1 - Gedragsverandering (start kw 2-opdrachten)", [["Bekijk de feedback/beoordeling die je in Brightspace hebt ontvangen"], ["Kijk terug op je studeergedrag in kwartiel 1: wat ging goed, wat was lastig, wat was het effect? Maak korte aantekeningen"], ["Startthermometer invullen (persoonlijke link per mail van Expoints, rond 9 november)"], ["Vorm een groepje van ca. 4 rondom vergelijkbare SMARTi-doelen"], ["Logboek stap 1: stel je SMARTi ontwikkeldoel vast en noteer het in het logboek", "d8", "m8_1"], ["Logboek stap 2: maak min. 4 gedragsregistraties vóór les 2.3 (zet alarmpjes!); Logboek stap 3: reflecteer op je registraties"], ["Groep: plan een evaluatiemoment vóór week 2.3 en bereid de 3-minuten pitch voor (voorwaardelijke eis!)"]]]], false],["ppo_c1", "2.2", [["Geen les - zelfstandig experimenteren", [["Experimenteer deze week met je SMARTi-doel; blijf registreren in het logboek"], ["Groep: evaluetiemoment afmaken en pitch klaarmaken"]]]], false],["ppo_c1", "2.3", [["Les 2.3 - Pitches & ABC-model", [["PITCH AFGEVEN (3 min over successen en valkuilen van de gedragsexperimenten; voorwaardelijke eis voor de groepsopdracht-beoordeling)"], ["Logboek: blijf registreren en reflecteren (hoort bij je individuele verslag kw 2)"], ["Logboek stap 5: schrijf je bijgestelde SMARTi-doel op"], ["Logboek stap 6: voer het nieuwe gedrag uit in week 2.4; maak weer min. 4 registraties"], ["Groep: maak de 10-minuten presentatie over de interventie; upload vóór de volgende les op Brightspace (intekenen via Course Tools > Groups!)", "d10", "m10_1"]]]], false],["ppo_c1", "2.5", [["Les 2.5 - Presentaties groepsopdracht", [["PRESENTATIE GEVEN (groepsopdracht kw 2); presentatie vóór de les in de inleverlink plaatsen"], ["Logboek stap 7: analyseer je registraties (wat ging goed, wat lastig, inzichten, concrete acties + inplannen in 2.6/2.7)"], ["Logboek stap 8: voer je acties uit en beschrijf het verloop/resultaat"], ["Neem de (verkorte) uitslag van de startthermometer op als bijlage van je logboek en beschrijf hoe je die gebruikte", "d9", "m9_1"]]]], false],["ppo_c1", "2.7", [["Les 2.7 - Kwaliteitenspel & intervisie", [["Kernkwadrant maken met het kwaliteitenspel: BEWAREN voor de individuele opdracht van kwartiel 3"], ["Intervisie over de gedragsveranderingen; info over 1 februari-regel, BSA en specialisatiekeuze"], ["Afronden: lever je individuele opdracht (logboek/verslag) in via de inleverlink", "d9", "m9_2"]]]], false],["ppo_c1", "3.1", [["Les 3.1 - Oriënteren (start kw 3)", [["Reserveer een notitieboek/document voor je oriëntatie-inzichten (hergebruik bij specialisatiekeuze, eindpitch en stage)"], ["Bestudeer de kwartielopdrachten: groepsopdracht 3 'Werkveld Workshops' + reflectieopdracht 'Jij en het werkveld'"], ["Overleg met je groepje over de workshop (week 3.5 of 3.7); pitch volgt in week 3.4"], ["Bekijk vanaf week 3.3/3.4 de specialisatie-filmpjes"], ["Bereid het tweede SLB-gesprek voor (voorbreidingsformulier op Bison)"]]]], true],["ppo_c1", "3.4", [["Les 3.4 - Waarden & specialisaties", [["PITCH aan de docent (max 5 min) over de plannen voor de werkveldworkshop + hulp-/feedbackvragen"], ["Kernkwaliteitenspel doen (indien nog niet gedaan in 2.7); kernwaarden benoemen"], ["Specialisatie-filmpjes bekijken; vragen verzamelen voor het voorlichtingsmoment"]]]], true],["ppo_c1", "3.5", [["Les 3.5 - Werkveld workshops + keuzethema", [["Jouw groep aan de beurt? Werkshopmateriaal vóór de les uploaden via de inleverlink kw 3"], ["Verwerk de inzichten over je specialisatiekeuze; werk verder aan je reflectieopdracht kw 3", "d11", "m11_1"]]]], true],["ppo_c1", "3.7", [["Les 3.7 - Werkveld workshops + voorlichting", [["Voorlichting specialisaties (donderdag 26 maart): stuur vóóraf je vragen in via het formulier"], ["Laatste workshops; verwerk de inzichten; werk verder aan je reflectieopdracht", "d11", "m11_2"]]]], true],["ppo_c1", "4.1", [["Les 4.1 - Professionele identiteit", [["Check je portfolio: wat is tekenend vanuit kw 1-3 voor je ontwikkeling? Start met de inhoud van je eindpresentatie"], ["Kwartielenquete invullen"]]]], true],["ppo_c1", "4.3", [["Les 4.3 - Profileren", [["Profilerings-schema invullen en feedback vragen (hoe kom jij over)"], ["Materiaal voor de eindpresentatie vooraf inleveren via de inleverlink; rubrics erbij nemen"]]]], true],["ppo_c1", "4.5", [["Week 4.5-4.7 - EINDPRESENTATIE (pitch)", [["Presenteer volgens het schema van je docent: je ontwikkeling, betekenisvolle situaties, specialisatiekeuze en de motivatie daarvoor"], ["Rubrics voor de eindpitch als voorbereiding gebruiken; materiaal tijdig inleveren", "d12", "m12_1"]]]], true]];
+const WPS=WP.map((x,i)=>({id:'wp'+(i+1),courseId:x[0],week:x[1],later:x[3]===true,ls:x[2].map((l,j)=>({id:'w'+(i+1)+'l'+(j+1),t:l[0],p:l[1].map((pi,k)=>({id:'w'+(i+1)+'l'+(j+1)+'p'+(k+1),text:pi[0],ref:(pi.length>1?{d:pi[1],m:pi[2]}:null),done:false}))}))}));
+const ROSTER=[{"d": "2026-11-09", "s": "09:15", "e": "11:45", "t": "WC Inleiding Psychologie & Gezondheid", "r": "DW02 · C0.20", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-09", "s": "11:45", "e": "13:15", "t": "WC Praktijkgericht Onderzoek", "r": "JSM04 · A2.61", "cid": "pro_c1", "k": "les"}, {"d": "2026-11-11", "s": "14:00", "e": "16:30", "t": "PGT1: Praktijkbezoek", "r": "SCA04 · D geen lokaal", "cid": "pgt_c1", "k": "les"}, {"d": "2026-11-13", "s": "08:30", "e": "10:00", "t": "HC Inleiding Psychologie & Gezondheid", "r": "DW02 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-13", "s": "10:15", "e": "11:45", "t": "HC Cognitieve & Neuropsychologie", "r": "ATH03 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2026-11-16", "s": "09:15", "e": "11:45", "t": "WC Inleiding Psychologie & Gezondheid", "r": "DW02 · C0.12", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-16", "s": "11:45", "e": "13:15", "t": "WC Praktijkgericht Onderzoek", "r": "EBIO2 · A1.35", "cid": "pro_c1", "k": "les"}, {"d": "2026-11-17", "s": "10:15", "e": "11:45", "t": "HC Cognitieve & Neuropsychologie", "r": "DMA05 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2026-11-17", "s": "12:30", "e": "14:00", "t": "WC Cognitieve & Neuropsychologie", "r": "AME24 · A2.47", "cid": "cnp_c1", "k": "les"}, {"d": "2026-11-17", "s": "13:15", "e": "14:45", "t": "Cursus Welbevinden (facultatief)", "r": "B3.18", "cid": "", "k": "facultatief"}, {"d": "2026-11-17", "s": "15:45", "e": "17:15", "t": "WC Praktijkgericht Onderzoek", "r": "JSM04 · B3.38", "cid": "pro_c1", "k": "les"}, {"d": "2026-11-20", "s": "08:30", "e": "10:00", "t": "HC Inleiding Psychologie & Gezondheid", "r": "ALE09 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-20", "s": "10:15", "e": "11:45", "t": "WC Professionele Gespreksvoering (thema 8)", "r": "SCA04 · A2.35", "cid": "pgt_c1", "k": "les"}, {"d": "2026-11-23", "s": "08:30", "e": "10:00", "t": "WC Praktijkgericht Onderzoek", "r": "EBIO2 · A1.35", "cid": "pro_c1", "k": "les"}, {"d": "2026-11-23", "s": "10:15", "e": "12:30", "t": "WC Inleiding Psychologie & Gezondheid", "r": "DW02 · D1.23", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-23", "s": "12:30", "e": "14:00", "t": "WC Cognitieve & Neuropsychologie", "r": "AME24 · B0.54", "cid": "cnp_c1", "k": "les"}, {"d": "2026-11-24", "s": "12:30", "e": "14:00", "t": "HC Cognitieve & Neuropsychologie", "r": "", "cid": "C0.76", "k": "cnp_c1"}, {"d": "2026-11-24", "s": "13:15", "e": "14:45", "t": "Cursus Welbevinden (facultatief; overlap met HC CNP)", "r": "B3.18", "cid": "", "k": "facultatief"}, {"d": "2026-11-24", "s": "14:00", "e": "15:45", "t": "WC Praktijkgericht Onderzoek", "r": "", "cid": "A2.61", "k": "pro_c1"}, {"d": "2026-11-25", "s": "13:15", "e": "14:45", "t": "WC Professionele Gespreksvoering (thema 9)", "r": "SCA04 · B1.40", "cid": "pgt_c1", "k": "les"}, {"d": "2026-11-26", "s": "15:00", "e": "16:30", "t": "WC Persoonlijke & Professionele Ontwikkeling", "r": "ATU04 · A2.45", "cid": "ppo_c1", "k": "les"}, {"d": "2026-11-27", "s": "13:15", "e": "14:00", "t": "HC Inleiding Psychologie (kort, dagelijks functioneren)", "r": "FHE04 · D0.07", "cid": "ipg_c1", "k": "les"}, {"d": "2026-11-30", "s": "08:30", "e": "11:00", "t": "WC Inleiding Psychologie & Gezondheid", "r": "DW02 · C0.16", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-01", "s": "08:30", "e": "09:15", "t": "HC Inleiding Psychologie (kort, mentaal welbevinden)", "r": "ALE09 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-02", "s": "09:15", "e": "11:00", "t": "WC Professionele Gespreksvoering (thema 10)", "r": "SCA04 · C0.20", "cid": "pgt_c1", "k": "les"}, {"d": "2026-12-02", "s": "11:00", "e": "12:30", "t": "WC Praktijkgericht Onderzoek", "r": "JSM04 · C0.20", "cid": "pro_c1", "k": "les"}, {"d": "2026-12-02", "s": "13:15", "e": "14:45", "t": "Cursus Welbevinden (facultatief)", "r": "B0.58", "cid": "", "k": "facultatief"}, {"d": "2026-12-03", "s": "14:00", "e": "15:45", "t": "HC Cognitieve & Neuropsychologie", "r": "JGU02 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2026-12-04", "s": "08:30", "e": "10:00", "t": "HC Inleiding Psychologie & Gezondheid", "r": "ALE09 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-04", "s": "10:15", "e": "11:00", "t": "Toetsinzage IPG-toets kw 1 (L30740)", "r": "A2.35", "cid": "", "k": "info"}, {"d": "2026-12-07", "s": "08:30", "e": "11:00", "t": "WC Inleiding Psychologie & Gezondheid", "r": "DW02 · A1.35", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-08", "s": "09:15", "e": "11:00", "t": "HC Cognitieve & Neuropsychologie", "r": "AME24 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2026-12-08", "s": "11:45", "e": "13:15", "t": "WC Cognitieve & Neuropsychologie", "r": "AME24 · B0.02", "cid": "cnp_c1", "k": "les"}, {"d": "2026-12-08", "s": "13:15", "e": "14:45", "t": "Cursus Welbevinden (facultatief)", "r": "SNO03 · B3.18", "cid": "", "k": "facultatief"}, {"d": "2026-12-09", "s": "09:15", "e": "11:00", "t": "WC Professionele Gespreksvoering (thema 11)", "r": "SCA04 · A3.43", "cid": "pgt_c1", "k": "les"}, {"d": "2026-12-10", "s": "11:00", "e": "11:45", "t": "HC Inleiding Psychologie (kort, zingeving)", "r": "EB033 · C0.61", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-10", "s": "11:45", "e": "13:15", "t": "WC Praktijkgericht Onderzoek", "r": "JSM04 · A2.35", "cid": "pro_c1", "k": "les"}, {"d": "2026-12-11", "s": "11:00", "e": "12:30", "t": "WC Persoonlijke & Professionele Ontwikkeling (presentaties)", "r": "ATU04 · A2.07", "cid": "ppo_c1", "k": "les"}, {"d": "2026-12-11", "s": "13:15", "e": "14:45", "t": "WC Praktijkgericht Onderzoek", "r": "EBIO2 · A1.35", "cid": "pro_c1", "k": "les"}, {"d": "2026-12-14", "s": "08:30", "e": "11:00", "t": "WC Inleiding Psychologie (werkcollege 6 / postermarkt 1)", "r": "DW02 · A2.61", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-14", "s": "11:00", "e": "12:30", "t": "WC Cognitieve & Neuropsychologie (ICF)", "r": "AME24 · A2.61", "cid": "cnp_c1", "k": "les"}, {"d": "2026-12-14", "s": "13:15", "e": "14:45", "t": "WC Praktijkgericht Onderzoek", "r": "EBIO2 · D0.01", "cid": "pro_c1", "k": "les"}, {"d": "2026-12-16", "s": "11:45", "e": "13:15", "t": "HC Cognitieve & Neuropsychologie", "r": "ATH03 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2026-12-16", "s": "13:15", "e": "14:45", "t": "WC Praktijkgericht Onderzoek", "r": "JSM04 · C0.20", "cid": "pro_c1", "k": "les"}, {"d": "2026-12-16", "s": "15:45", "e": "17:15", "t": "WC Professionele Gespreksvoering (thema 12)", "r": "SCA04 · A2.35", "cid": "pgt_c1", "k": "les"}, {"d": "2026-12-17", "s": "08:30", "e": "09:15", "t": "HC Inleiding Psychologie (kort, meedoen)", "r": "ARO12 · D0.07", "cid": "ipg_c1", "k": "les"}, {"d": "2026-12-18", "s": "11:45", "e": "13:15", "t": "HC Inleiding Psychologie (middelengebruik)", "r": "DW02 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2027-01-04", "s": "12:30", "e": "14:00", "t": "WC Cognitieve & Neuropsychologie (oefen/responsie)", "r": "AME24 · A2.61", "cid": "cnp_c1", "k": "les"}, {"d": "2027-01-04", "s": "15:00", "e": "16:30", "t": "WC Praktijkgericht Onderzoek (OR les 7 / Excel les 6)", "r": "JSM04 · A3.31", "cid": "pro_c1", "k": "les"}, {"d": "2027-01-05", "s": "10:15", "e": "11:45", "t": "WC PPO (kwaliteitenspel & intervisie)", "r": "ATU04 · A1.12", "cid": "ppo_c1", "k": "les"}, {"d": "2027-01-05", "s": "11:45", "e": "13:15", "t": "WC Professionele Gespreksvoering (thema 13, laatste les)", "r": "SCA04 · B4.08", "cid": "pgt_c1", "k": "les"}, {"d": "2027-01-05", "s": "16:30", "e": "17:15", "t": "HC Inleiding Psychologie (kort, kwaliteit van leven)", "r": "MGR16 · C0.76", "cid": "ipg_c1", "k": "les"}, {"d": "2027-01-07", "s": "13:15", "e": "14:45", "t": "HC Inleiding Psychologie (responsiecollege)", "r": "ALE09 · D0.07", "cid": "ipg_c1", "k": "les"}, {"d": "2027-01-08", "s": "08:30", "e": "10:00", "t": "WC Praktijkgericht Onderzoek", "r": "EBIO2 · D0.01", "cid": "pro_c1", "k": "les"}, {"d": "2027-01-08", "s": "10:15", "e": "12:30", "t": "WC Inleiding Psychologie (werkcollege 7 / postermarkt 2)", "r": "DW02 · A3.31", "cid": "ipg_c1", "k": "les"}, {"d": "2027-01-13", "s": "13:15", "e": "14:45", "t": "HC Cognitieve & Neuropsychologie (vragen/responsie)", "r": "ATH03 · C0.76", "cid": "cnp_c1", "k": "les"}, {"d": "2027-01-13", "s": "15:00", "e": "16:30", "t": "WC Praktijkgericht Onderzoek (mogelijk Exceltoets - check toetsrooster)", "r": "JSM04 · C0.12", "cid": "pro_c1", "k": "les"}];
+const WEEKMONDAYS=["2026-11-09","2026-11-16","2026-11-23","2026-11-30","2026-12-07","2026-12-14","2027-01-04","2027-01-11","2027-01-18","2027-01-25"];
+const KERST=["2026-12-21","2027-01-03"];
+const ROSTER_END="2027-01-17";
+function inKerst(d){return d>=KERST[0]&&d<=KERST[1];}
+function weekIndexOf(d){
+  const n=weekNumOf(d);
+  let w=n;
+  if(d>=KERST[0]){w=n-2;}
+  return w;
+}
+function genFixed(){
+  const out=[];let d=parseD("2026-11-13");
+  const end=parseD(ROSTER_END);
+  while(d<=end){
+    const ds=fmtD(d);
+    if(ds>=KERST[0]&&ds<=KERST[1]){}
+    const dow=d.getDay();
+    if(dow===1&&ds>="2026-11-16")out.push({d:ds,s:"17:00",e:"20:00",t:"Sport",r:"",cid:"",k:"sport"});
+    if(dow===5||dow===6||dow===0)out.push({d:ds,s:"17:00",e:"01:00",t:"Werk (17:00-01:00)",r:"",cid:"",k:"werk"});
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+function fullRoster(){
+  const all=ROSTER.map(r=>({d:r.d,s:r.s,e:r.e,t:r.t,r:r.r,cid:r.cid,k:r.k}));
+  return all.concat(genFixed()).sort((a,b)=>(a.d+a.s).localeCompare(b.d+b.s));
+}
+
+function buildNotesSeed(){
+  const SEED_NOTES=[
+    {courseId:"ipg_c1",label:"Inleiding Psychologie & Gezondheid",weeks:["2.1","2.2","2.3","2.4","2.5","2.6","2.7"]},
+    {courseId:"cnp_c1",label:"Cognitieve & Neuropsychologie",weeks:["2.1","2.2","2.3","2.4","2.5","2.6"]},
+  ];
+  const t=todayStr();
+  return SEED_NOTES.map(n=>({id:"nf_"+n.courseId,courseId:n.courseId,label:n.label,open:false,
+    children:n.weeks.map(w=>({id:"nf_"+n.courseId+"_"+w,week:w,open:false,notes:[{id:"n_"+n.courseId+"_"+w,text:"",updated:null}]}))}));
+}
+function seed(){
+  const t=todayStr();
+  const cs=[
+    {id:"ipg_c1",name:"Inleiding Psychologie & Gezondheid",color:"#10B981",goal:18,credits:5},
+    {id:"cnp_c1",name:"Cognitieve & Neuropsychologie",color:"#6366F1",goal:20,credits:5},
+    {id:"pro_c1",name:"Praktijkgericht Onderzoek",color:"#F59E0B",goal:14,credits:5},
+    {id:"pgt_c1",name:"Professionele Gespreksvoering & Training 1",color:"#FB7185",goal:10,credits:5},
+    {id:"ppo_c1",name:"PPO1 & Thuisgroepen (hele jaar)",color:"#14B8A6",goal:3,credits:5}];
+  const S=[];
+    const ss=S.map((x,i)=>({id:"s"+(i+1),date:addDays(t,x[0]),courseId:x[1],activity:x[2],minutes:x[3],type:x[4]}));
+  const B=[];
+    const bb=B.map((x,i)=>({id:"b"+(i+1),date:addDays(t,x[0]),start:x[1],end:x[2],courseId:x[3],activity:x[4],done:x[5],room:x[6]||"",teacher:x[7]||"",notes:x[8]||""}));
+  const D=[
+    ["2027-01-11","Tentamen Inleiding Psychologie & Gezondheid","ipg_c1","Exam",0,
+      "Tentamen: 50 multiplechoicevragen (3 antwoordalternatieven), cesuur 66% = 33/50 goed voor een 5,5. Duur 60 min in TestVision, geen hulpmiddelen (+15 min bij een deficiëntieverklaring). LET OP DATUM: toetsweek kwartiel 2 (meestal week 8 of 9) — zet hier de exacte datum uit het toetsrooster! Herkansing: kwartiel 3. Weeging: preventie 20%, determinanten 25%, doelgedrag (positieve gezondheid/psychologie) 15%, spinnenweb-pijlers 20%, interventiemethodes 20%. Toetsstof: H1 t/m 12 Lemmers & De Greeff (2026), alle literatuur uit de Reader (map Bibliotheek op Brightspace), sheets van de lange hoorcolleges én de werkcolleges (sheets korte hoorcolleges zijn GEEN toetsstof). Studeertips: vragen op begrips- en toepassingsniveau; ASE-model moet je op een casus kunnen toepassen, andere gedragsmodellen op begripsniveau; stages of change-fasen zoals in het hoorcollege; namen/jaartallen komen alleen samen met hun model/theorie. 4 EC = 112 uur.",
+      [["wk 2.1", "Boek Lemmers & De Greeff (2026) aanschaffen; Reader uit Brightspace printen"], ["wk 2.1", "H1 Lemmers: introductie — ken salutogenese vs. pathogenese"], ["wk 2.2", "H2 Lemmers + H3 Dierx: gedragsmodellen — ASE-model oefenen op casus; stages of change-fasen (HC-namen); fear appeal en nudging herkennen (sla 2.2.3, 2.2.5, 2.2.6 en Dierx 3.7 over)"], ["wk 2.3", "H3 + H4 Lemmers: beleid — grote lijnen VTV, gezondheidsnota en preventieakkoord"], ["wk 2.4", "Bannink H1: zelfmanagement — toepassingskaders hoeven niet geleerd"], ["wk 2.5", "H5 + H6 Lemmers + H2 Dierx: gespreksvoeringsmodellen toepassen op casus; sociale kaart + zorgstructuur 1e/2e lijn (sla OKO 6.4.1 en figuur 6.3 over)"], ["wk 2.6", "H8, H9 en H12 Lemmers: middelengebruik"], ["wk 2.1 t/m 2.6", "Pijlers positieve gezondheid: Dierx H1; Lemmers H7 + H10 (smaaklessen en 10.3.1 overslaan); H6.2–6.3 + Hosper (gedragsverandering bij armoede); H11 mentaal welbevinden; Streur-Kranenburg H11 zingeving; Leeuwerke-Luiten H1 meedoen (blauwe kaders overslaan)"], ["wk 2.7", "Mindmap of conceptmap maken per thema"], ["wk 2.8", "Oefenen: ASE-toepassingsvragen op casussen; namen/jaartallen koppelen aan het bijbehorende model"]]],
+    ["2026-12-07","Posteropdracht IPG (postermarkt)","ipg_c1","Assignment",0,
+      "Groepsopdracht (4–5 studenten), 1 EC = 28 uur. Interview met iemand uit jullie omgeving met een veranderwens op gezondheidsgebied (bijv. meer bewegen, meer zelfvertrouwen, meer zingeving, minder eenzaam). Principes van Positieve Gezondheid toepassen, het gedrag analyseren en een passende interventie selecteren. Poster met veranderwens + gedragsanalyse + interventie; beoordeeld op de postermarkt tijdens werkcollege 6 of 7 — LET OP: postermarkt is in werkcollege 6 (wk 2.6, ca. 7 dec) of werkcollege 7 (wk 2.7, ca. 4 jan) - check welke en zet de exacte datum! Hele groep aanwezig; afwezig = individuele herkansing (kwartiel 3). Voorwaarden: poster leesbaar (bijv. A3), voldoet aan de AMA-eisen, ondertekend toestemmingsformulier aan docent getoond. Eindcijfer = gemiddelde van de drie rubric-criteria. Upload de poster vóóraf via het Brightspace-inleverpunt; tussentijds peerfeedback in de werkcolleges.",
+      [["wk 2.1", "Groep vormen (4–5 studenten)"], ["wk 2.2", "Deelnemer met gezondheids-veranderwens regelen; toestemmingsformulier laten ondertekenen"], ["wk 2.3", "Interview voorbereiden: vragen opstellen met de principes van Positieve Gezondheid"], ["wk 2.4", "Interview afnemen"], ["wk 2.5", "Gedrag analyseren (determinanten) en een passende interventie kiezen"], ["wk 2.6", "Poster maken: veranderwens + gedragsanalyse + interventie (leesbaar, AMA-eisen)"], ["vóór markt", "Poster uploaden via het Brightspace-inleverpunt vóór de postermarkt"], ["wk 2.6", "Postermarkt: hele groep aanwezig, poster presenteren"]]],
+    ["2027-01-11","Tentamen Cognitieve & Neuropsychologie","cnp_c1","Exam",0,
+      "Digitale toets in TestVision, 120 min (geen hulpmiddelen; +15 min bij deficiëntieverklaring). Deel 1: 42 meerkeuzevragen (3 opties, 1 punt each) over de boekhoofdstukken — 70% van het eindcijfer. Deel 2: 2 open vragen (met deelvragen) over de werkcollege-stof, in correct Nederlands — 30%. Totaal 60 punten; 36 punten (60%) = voldoende → 5 EC. Toetsstof: Kessels et al. (2022) H3, H4*, H5, H7, H9; Zimbardo et al. (2022) H3; Schouppe & de Graef (2011) H1 (digitaal op Brightspace); werkcollegedocumenten (elke vrijdag na de werkcollegeweek in de Bibliotheek) — stof voor de open vragen. Motoriek & actie en taal & spraak (Kessels) zijn NIET meer toetsstof. H4-pagina's: p.101–107 wel; 108–112 niet; 113 §4.2.4-intro wel; 113 'diffusie-gewogen MRI' t/m 116 niet; 117–119 PET al.1–2 wel; 119 PET al.3 t/m 120 niet; 120 laatste PET-alinea wel; 120 vanaf SPECT t/m 121 niet; 121 §4.4 t/m 123 (EEG) wel; 123 vanaf 4.4.2 t/m 124 (MEG) niet; 124 vanaf 4.5 t/m 126 wel. Inschrijven voor de toets zodra dit kan. Datum: toetsweek kwartiel 2 (week 8, 9 of 10) — zet de exacte datum uit het toetsrooster. Herkansing: 2e kans dit studiejaar.",
+      [["wk 2.1", "Boek Kessels et al. (2022) Klinische Neuropsychologie regelen; Schouppe H1 uit Brightspace-Bibliotheek downloaden"], ["wk 2.2", "Kessels H3 (neuropsychologie in de praktijk) lezen en samenvatten"], ["wk 2.3", "Kessels H4 p.101–107 (beeldvorming) lezen"], ["wk 2.3", "Kessels H4 resterende wel-toetsstof: p.113 §4.2.4-intro, p.117–119 PET 1–2, p.120 laatste PET-alinea, p.121–123 EEG, p.124–126 §4.5 (de rest overslaan)"], ["wk 2.4", "Kessels H9 (aandacht en executieve functies)"], ["wk 2.5", "Kessels H5 (plasticiteit, herstel en revalidatie) + Kessels H7 (geheugen)"], ["wk 2.6", "Zimbardo H3"], ["wk 2.6", "Schouppe & de Graef H1"], ["wk 2.2 t/m 2.6", "Werkcollegedocumenten wekelijks meelezen (vrijdag in Bibliotheek) en casus-antwoorden bijhouden voor de open vragen"], ["wk 2.7 t/m 2.8", "Oefen-MC-vragen maken; argumenteren oefenen: correct Nederlands, geen spreektaal"]]],
+    ["2027-01-11","Excel kennistoets PRO","pro_c1","Exam",0,
+      "Individuele kennistoets in een computerlokaal, 30% van het eindcijfer. Een ingevuld Excel-databestand met ruwe data van een fictief vragenlijstonderzoek; kies zelf de juiste analyseprocedures om onderzoeksvragen te beantwoorden. 22 vragen: 7 MC + 15 open met exact getalsmatig antwoord. Grens 55% van 100 punten. Wordt voorbereid via de Excel-werkcolleges; opdrachten via de antwoordenlink; niet foutloos = aanvullende opdracht over hetzelfde onderwerp (alle antwoorden goed pas dan verder). Maak daarom sowieso de aanvullende opdrachten. Eerste kans: week 2.8/2.9 (hier ingeschat: 11-01-2027 — CHECK toetsrooster); herkansing week 3.10.",
+      [["wk 2.2", "Excel les 1: gegevens invoeren en frequentieanalyse; opdracht inleveren via antwoordenlink"], ["wk 2.3", "Excel les 2: uni- en bivariate analyses"], ["wk 2.4", "Excel les 3: subsets en hercoderen"], ["wk 2.5", "Excel les 4: homogeniteitsanalyse en variabele samenstellen"], ["wk 2.6", "Excel les 5: visualisaties"], ["wk 2.7", "Excel les 6: herhaling; openstaande aanvullende opdrachten afmaken"], ["wk 2.8", "Oefenen met databestand; begrippen variabelen en meetniveaus herhalen"]]],
+    ["2027-03-19","Onderzoeksrapport PRO (groepsopdracht)","pro_c1","Assignment",0,
+      "GROEPSOPDRACHT (max 4 studenten), 70% van het eindcijfer. Onderzoeksrapport max 4000 woorden (+10% marge), 4 hoofdstukken: Inleiding, Methode, Resultaten, Conclusie & aanbevelingen; plus titelblad, voorwoord, inhoudsopgave, samenvatting, literatuurlijst, bijlagen (vragenlijst + informatiebrief) en bewijs informed consent. Rubric-grens 55%. Voorwaardelijke eisen: taalvaardigheid, lay-out, bronvermelding (Quickscan), AMA. AI-regels: TOEGESTAAN als hulp bij bronnen zoeken, samenvatten, spelling/stijl-check, inhoudelijke feedback en bronnenlijst; NIET voor het schrijven van teksten. AI-gebruik vermelden in voorwoord + literatuurlijst + prompt-transcript in bijlage, anders melding fraude/plagiaat. Werkcollegedeelname verplicht (max 2 missen). Samenwerkingsproblemen uiterlijk 1 week vóór de deadline bij de docent. Deadlines: eerste kans vrijdag 17:00 in week 3.8 (hier ingeschat: 19-03-2027 — CHECK toetsrooster); herkansing week 4.6. 5 EC = 140 uur totaal.",
+      [["wk 2.1", "Stap 1: probleemstelling, relevantie en opdrachtgever uitwerken (na OR les 1)"], ["wk 2.2", "Stap 2: doelstelling en onderzoeksvragen formuleren; samenwerkingscontract opstellen en tekenen"], ["wk 2.3", "Stap 3: populatie/steekproef bepalen + informed consent en informatiebrief opstellen"], ["wk 2.4", "Stap 4: vragenlijst samenstellen uit bestaande, betrouwbare vragenlijsten"], ["wk 2.5", "STREEFTARGET: onderzoeksopzet (stap 1-3) AF + pitch klaar voor GO/NO GO-moment"], ["wk 2.6", "STREEFTARGET: vragenlijst AF en GO halen; bij GO meteen afname plannen en starten"], ["wk 2.7", "Herkansing pitch en/of vragenlijst (indien NO GO); anders: afnames draaien"], ["vakantie", "Data-verzameling afronden; alle vragenlijsten afgenomen vóór week 3.1"], ["wk 3.1", "Stap 6: hoofdstuk 1 (inleiding) + 2 (methode) schrijven"], ["wk 3.2", "Stap 7-8: peerfeedback op H1+2 verwerken; data verwerken en analyseren in Excel"], ["wk 3.3", "Stap 9: hoofdstuk 3 (resultaten) schrijven"], ["wk 3.4", "Stap 10-11: conclusies en discussie + aanbevelingen; hoofdstuk 4 schrijven"], ["wk 3.5", "Stap 12: peerfeedback op H3+4 verwerken; samenvatting, voorwoord, literatuurlijst en bijlagen afronden"], ["wk 3.7", "Docentconsult (feedback op 1 onderdeel) verwerken; eindcheck: woordengrens, informed consent, APA, AI-vermelding"], ["wk 3.8", "INLEVEREN: vrijdag 17:00 via Brightspace-inleverpunt"]]],
+    ["2027-01-15","Video-opname PGT1 (probleemverhelderend gesprek)","pgt_c1","Assignment",0,
+      "VIDEO-OPNAME (80% van het eindcijfer): probleemverhelderend gesprek met een tegenrolspeler. Kies één van de 3 toetsrollen (met klantrol); tegenrolspeler moet 16+ zijn (instructie-document op Brightspace). VOORWAARDEN (niet nagekomen = 'niet voldaan'): video uploaden via Kaltura (geen YouTube-links of sharepoint!), minimaal 10 en maximaal 15 minuten, niet knippen, professionele setting (90 graden hoek, niet naast elkaar op een bank), bovenlichaam + gezicht van jou en tegenrolspeler continu goed in beeld en verstaanbaar. Beoordeling: openen & afsluiten 25%, aandachtgevend gedrag 15%, selectieve luistervaardigheden 20%, structureren (parafraseren/samenvatten/rode draad) 20%, professioneel werken 10%. Eindcijfer = video 80% + evaluatie 10% + professioneel werken 10%; 5,5 = voldoende (5 EC). INLEVERDEADLINE: vrijdag 15 januari 2027 17:00 (week 2.8), zelfde inleverlink als het evaluatieverslag. TE LAAT = TE LAAT: 17:01 wordt niet nagekeken. HERKANSING (volgend kwartiel): vrijdag 19 maart 2027 17:00 (week 3.6), met een ANDERE toetsrol dan de eerste poging. Let op: de lesweken van de thema's kunnen per klas verschillen door het praktijkbezoek; volg de planning van je docent.",
+      [["wk 2.1", "Werkcollege 2.1: thema 8 - intervisie & Situatie Verhelderen (G-schema); wekelijks oefenen en feedback vragen"], ["wk 2.2", "Werkcollege 2.2: thema 9 - G-schema & overgangen; oefenen"], ["wk 2.3", "Werkcollege 2.3: thema 10 - intervisie & evaluatieverslag bespreken; format + voorbeeld sterke/zwakke evaluatie doornemen"], ["wk 2.4", "Werkcollege 2.4: thema 11 - stiltes benutten; oefenen"], ["wk 2.5", "Werkcollege 2.5: thema 12 - verdieping parafraseren & reflecteren op gevoel"], ["wk 2.6", "Werkcollege 2.6: thema 13 - toetsvoorbereiding; toetsrol kiezen en tegenrolspeler regelen (16+)"], ["wk 2.7", "Proefopname maken en zelf beoordelen met de rubric; Kaltura uitproberen"], ["wk 2.8", "Opnemen en inleveren: video + evaluatie vóór vrijdag 15 jan 17:00"]]],
+    ["2027-01-15","Evaluatieverslag PGT1","pgt_c1","Assignment",0,
+      "EVALUATIEVERSLAG (10% van het eindcijfer): reflectie op het gesprek en je ontwikkeling. Gebruik het standaardformat (Format Evaluatieverslag, inclusief opdrachtomschrijving) op Brightspace; het voorbeeld met sterke en zwakke evaluatie laat zien wat voldoende kwaliteit is. Vereiste: benoem wat goed ging, wat beter kon en hoe je dat in de toekomst aanpakt; leerhouding tonen. Zelfde inleverlink als de video, deadline vrijdag 15 januari 2027 17:00 (week 2.8). Herkansing (volgend kwartiel): 19 maart 2027 17:00. Professioneel werken (10%) wordt beoordeeld op je inzet en deelname gedurende de hele module, dus wekelijks actief meedoen telt direct mee.",
+      [["wk 2.3", "Format evaluatieverslag + voorbeeld sterke/zwakke evaluatie doornemen"], ["wk 2.6", "Tijdens oefengesprekken alvast reflectie-notities maken (wat ging goed/slecht)"], ["wk 2.8", "Evaluatieverslag schrijven naar aanleiding van de opname en inleveren met de video vóór vr 15 jan 17:00"]]],
+    ["2027-01-15","Kw 2-reflectie PPO (gedragsverandering)","ppo_c1","Assignment",0,
+      "VOORWAARDELIJK portfolio-onderdeel (3 stuks, elk aan het einde van kw. 1 t/m 3). Formaat: reflectie op een betekenisvolle ervaring met reflectiemodel (format + rubric op Brightspace). Kw1: samenwerking. Kw2: gewenst/ongewenst gedrag + gedragsveranderingstraject. Kw3: 'yes-moment' (zingeving) + oriëntatie op beroepen/organisaties. Deadlines: vrijdag week 8 van elk kwartiel, 17:00. Alle drie moeten voldoende zijn voordat je eindcijfer voor de pitch (kw. 4) wordt vrijgegeven. Herkansingsdeadline voor het hele portfolio: week 4.10. 5 EC totaal voor de module (140 uur, hele jaar).",
+      [["wk 2.8", "Reflectie 2 (kw 2: gedragsverandering) schrijven volgens het reflectieformat en inleveren, vrijdag wk 2.8 17:00"], ["LATER kw 3", "Reflectie 3 (kw 3: yes-moment + beroepenoriëntatie) — pas relevant in kwartiel 3"]],false],
+    ["2027-03-19","Kw 3-reflectie PPO (yes-moment & werkveld)","ppo_c1","Assignment",0,
+      "VOORWAARDELIJK portfolio-onderdeel (3 stuks, elk aan het einde van kw. 1 t/m 3). Formaat: reflectie op een betekenisvolle ervaring met reflectiemodel (format + rubric op Brightspace). Kw1: samenwerking. Kw2: gewenst/ongewenst gedrag + gedragsveranderingstraject. Kw3: 'yes-moment' (zingeving) + oriëntatie op beroepen/organisaties. Deadlines: vrijdag week 8 van elk kwartiel, 17:00. Alle drie moeten voldoende zijn voordat je eindcijfer voor de pitch (kw. 4) wordt vrijgegeven. Herkansingsdeadline voor het hele portfolio: week 4.10. 5 EC totaal voor de module (140 uur, hele jaar).",
+      [["wk 2.8", "Reflectie 2 (kw 2: gedragsverandering) schrijven volgens het reflectieformat en inleveren, vrijdag wk 2.8 17:00"], ["LATER kw 3", "Reflectie 3 (kw 3: yes-moment + beroepenoriëntatie) — pas relevant in kwartiel 3"]],true],
+    ["2026-12-18","Groepsopdracht PPO kw 2 (gedragsverandering)","ppo_c1","Assignment",0,
+      "VOORWAARDELIJK portfolio-onderdeel (3 stuks, tijdens de lessen van kw. 1 t/m 3). Kw1: mini-college over een psychologisch perspectief uit Inleiding Psychologie. Kw2 (ACTUEEL): met een groepje werken aan gedragsverandering richting een soortgelijk doel met een interventie; presentatie over de interventie en het proces. Kw3: workshop ontwikkelen en geven over een specialisatie (Psychologie & Gezondheid, Jeugd, of Loopbaan, Talent & Coaching). Worden in de lessen uitgevoerd en beoordeeld; beoordeling binnen 15 werkdagen. Alle drie voldoende = voorwaarde voor het eindcijfer van de pitch. Herkansingsdeadline portfolio: week 4.10.",
+      [["wk 2.2 t/m 2.6", "Groepsopdracht 2 (gedragsverandering met interventie) uitwerken in de lessen; presentatie voorbereiden"], ["LATER kw 3", "Groepsopdracht 3 (werkveld-workshop specialisatie) — pas relevant in kwartiel 3"]],false],
+    ["2027-05-07","Kw 3-groepsopdracht PPO (werkveld-workshop)","ppo_c1","Assignment",0,
+      "VOORWAARDELIJK portfolio-onderdeel (3 stuks, tijdens de lessen van kw. 1 t/m 3). Kw1: mini-college over een psychologisch perspectief uit Inleiding Psychologie. Kw2 (ACTUEEL): met een groepje werken aan gedragsverandering richting een soortgelijk doel met een interventie; presentatie over de interventie en het proces. Kw3: workshop ontwikkelen en geven over een specialisatie (Psychologie & Gezondheid, Jeugd, of Loopbaan, Talent & Coaching). Worden in de lessen uitgevoerd en beoordeeld; beoordeling binnen 15 werkdagen. Alle drie voldoende = voorwaarde voor het eindcijfer van de pitch. Herkansingsdeadline portfolio: week 4.10.",
+      [["wk 2.2 t/m 2.6", "Groepsopdracht 2 (gedragsverandering met interventie) uitwerken in de lessen; presentatie voorbereiden"], ["LATER kw 3", "Groepsopdracht 3 (werkveld-workshop specialisatie) — pas relevant in kwartiel 3"]],true],
+    ["2027-06-18","Eindpresentatie PPO1&TG (pitch, kw 4)","ppo_c1","Assignment",0,
+      "EINDPRESENTATIE (bepaalt je cijfer voor PPO1&TG, 5 EC): max 10 minuten, creatieve presentatie van wat je dit jaar hebt geleerd over jezelf en je ontwikkeling, plus hoe je tot je specialisatiekeuze bent gekomen (Psychologie & Gezondheid / Jeugd / Loopbaan, Talent & Coaching). Ingepland in week 4.5, 4.6 of 4.7 — ALLEEN als je voorwaardelijke portfolio (3 reflecties + 3 groepsopdrachten) volledig met voldoende is afgerond. Lever je presentatiemateriaal (PowerPoint/poster) in via de Brightspace-inleverlink. Beoordeling met rubric. Herkansing: in overleg met studiecoach rond week 4.10. LATER: speelt pas in kwartiel 4.",
+      [["LATER kw 4", "Portfolio volledig op voldoende controleren (3 reflecties + 3 groepsopdrachten)"], ["LATER kw 4", "Presentatie maken (max 10 min): geleerde over jezelf + specialisatiekeuze beargumenteren"], ["LATER kw 4", "Presentatiemateriaal inleveren op Brightspace en oefenen"]],true],
+    ["2027-06-30","BSA-check: 45 EC (hele jaar)","ppo_c1","Other",0,
+      "GEEN toets maar een harde voorwaarde: minimaal 45 EC aan het einde van het studiejaar = positief Bindend Studie Advies (BSA) en doorgang naar jaar 2. Minder dan 45 EC zonder uitstel = negatief advies: geen herinschrijving TP bij Saxion per 1 september. Check je stand in Bison (studievoortgang): niet-definitieve punten en 'onderwaterpunten' tellen nog NIET mee. Uitstel mogelijk bij persoonlijke omstandigheden (lid 13 OER). Toetsvoorzieningen via decaan (SaxHelpt); extra kans bij overlijden 1e graads; twijfel: studiecoach. Reminder om je EC-stand per kwartiel te checken.",
+      [["wk 2.8", "EC-stand checken in Bison na de toetsweek: IPG (5) + CNP (5) + PRO (5) + PGT1 (5) = 20 EC dit kwartiel; plus kwartiel 1 = op weg naar 45"], ["wk 3.8", "EC-stand checken in Bison na de toetsweek van kwartiel 3"], ["wk 4.7", "Laatste check vóór het BSA: alle 45 EC en voorwaardelijke portfolio rond?"]],true]
+  ];
+  const dd=D.map((x,i)=>({id:"d"+(i+1),title:x[1],courseId:x[2],type:x[3],date:x[0],readiness:x[4],
+    desc:x[5]||"",later:x[7]===true,materials:(x[6]||[]).map((mt,j)=>({id:"m"+(i+1)+"_"+(j+1),target:mt[0],text:mt[1],done:false}))}));
+  return {courses:cs,sessions:ss,blocks:bb,deadlines:dd,weekplan:WPS,semStart:'2026-11-09',seq:1000,notes:buildNotesSeed()};
+}
+function load(){try{const r=localStorage.getItem(KEY);if(r){state=JSON.parse(r);
+      if(!state.notes)state.notes=buildNotesSeed();
+      if(!state.weekplan)state.weekplan=JSON.parse(JSON.stringify(WPS));
+      if(!state.semStart)state.semStart='2026-11-09';
+      (state.deadlines||[]).forEach(d=>{if(d.desc===undefined)d.desc="";if(!d.materials)d.materials=[];
+      d.materials.forEach(m=>{if(m.target===undefined)m.target="";});});
+      if(state.light)document.body.classList.add("light");return;}}catch(e){}state=seed();save();}
+function save(){try{state.lastModified=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+  scheduleSyncPush();}
+function uid(){return "x"+(state.seq++);}
+function course(id){return state.courses.find(c=>c.id===id);}
+
+function minutesOn(date){return state.sessions.filter(s=>s.date===date).reduce((a,s)=>a+s.minutes,0);}
+function sessionsOn(date){return state.sessions.filter(s=>s.date===date);}
+function weekHours(mon){let m=0;for(let i=0;i<7;i++)m+=minutesOn(addDays(mon,i));return m;}
+function currentStreak(){
+  const t=todayStr();let start=minutesOn(t)>0?t:addDays(t,-1),n=0,d=start;
+  while(minutesOn(d)>0){n++;d=addDays(d,-1);}return n;}
+function longestStreak(){
+  if(!state.sessions.length)return 0;
+  const days=[...new Set(state.sessions.map(s=>s.date))].sort();
+  let best=1,run=1;
+  for(let i=1;i<days.length;i++){run=(addDays(days[i-1],1)===days[i])?run+1:1;best=Math.max(best,run);}return best;}
+function xp(){return Math.round(state.sessions.reduce((a,s)=>a+s.minutes,0)/10);}
+
+function go(v){view=v;["today","week","rooster","notes","sync","dashboard","planner","timer","deadlines","xams","courses"].forEach(x=>{const b=document.getElementById("nav-"+x);if(b)b.classList.toggle("active",x===v);});render();}
+
+function stat(k,v,n){return '<div class="card"><div class="k">'+k+'</div><div class="v">'+v+'</div>'+(n?'<div class="n">'+n+'</div>':'')+'</div>';}
+
+function render(){
+  const main=document.querySelector("main");
+  let h="";
+  if(view==="today")h=renderToday();
+  else if(view==="week")h=renderWeek();
+  else if(view==="rooster")h=renderRooster();
+  else if(view==="dashboard")h=renderDashboard();
+  else if(view==="planner")h=renderPlanner();
+  else if(view==="timer")h=renderTimer();
+  else if(view==="deadlines")h=renderDeadlines();
+  else if(view==="xams")h=renderXams();
+  else if(view==="notes")h=renderNotes();
+  else if(view==="sync")h=renderSync();
+  else h=renderCourses();
+  main.innerHTML='<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">'+h;
+  if(view==="dashboard")drawCharts();
+}
+
+function renderToday(){
+  const t=todayStr(),mon=mondayOf(t);
+  const blocksToday=state.blocks.filter(b=>b.date===t).sort((a,b)=>a.start.localeCompare(b.start));
+  const doneB=blocksToday.filter(b=>b.done).length;
+  const hrs=minutesOn(t)/60;
+  const st=currentStreak();
+  let h='<h1>'+dayName(t)+" "+dLabel(t)+'</h1><div class="sub">Today only. No thinking required, just work the list.</div>';
+  h+='<div class="panel" style="margin-bottom:16px"><h3>Vandaag op je rooster</h3>';
+  {
+    const t=todayStr();
+    const items=fullRoster().filter(ev=>ev.d===t).sort((a,b)=>a.s.localeCompare(b.s));
+    if(!items.length)h+='<div class="empty">Niets op het rooster vandaag: hele dag vrij om te studeren (of rusten).</div>';
+    items.forEach(ev=>{
+      const c=ev.cid?course(ev.cid):null;
+      h+='<div class="today-block" style="cursor:default"><div class="tb-time">'+ev.s+'–'+ev.e+'</div><div class="tb-main"><div class="tb-act">'+kindBadge(ev.k,ev.cid)+esc(ev.t)+'</div><div class="tb-sub">'+(ev.r?esc(ev.r):"")+'</div></div></div>';
+    });
+  }
+  h+='<div class="cards">';
+  h+=stat("Hours today",hrs.toFixed(1)+"h","");
+  h+=stat("Streak",st+" days","longest: "+longestStreak());
+  h+=stat("Blocks today",doneB+" / "+blocksToday.length,"");
+  const steps14=state.deadlines.filter(d=>{const dl=Math.round((parseD(d.date)-parseD(t))/86400000);return dl>=0&&dl<=14;});
+  const stepTotal=steps14.reduce((a,d)=>a+d.materials.length,0);
+  const stepDone=steps14.reduce((a,d)=>a+d.materials.filter(m=>m.done).length,0);
+  h+=stat("Next 14 days",stepDone+" / "+stepTotal,"steps ticked");
+  h+='</div>';
+  h+='<div class="panel" style="margin-bottom:16px"><h3>Komende les (week '+currentWeekLabel()+')</h3>';
+  {
+    const wn=+currentWeekLabel().split(".")[1];
+    const wdIdx=(parseD(todayStr()).getDay()+6)%7;
+    const weeksToShow=[wn];if(wdIdx>=4)weeksToShow.push(wn+1);
+    let any=false;
+    weeksToShow.forEach((wk,wi)=>{
+      if(wk>8)return;
+      const wl="2."+wk;
+      if(wi===1)h+='<div class="step-src" style="margin-top:12px"><b>Volgende week ('+wl+')</b></div>';
+      state.courses.forEach(c=>{
+        const we=state.weekplan.find(x=>x.courseId===c.id&&x.week===wl);
+        if(!we)return;
+        we.ls.forEach(l=>{
+          const un=l.p.filter(p=>!p.done);
+          if(!l.p.length)return;
+          any=true;
+          h+='<div class="step-src"><span class="swatch" style="background:'+c.color+'"></span><b>'+c.name+'</b><span class="meta" style="width:auto">'+l.t+'</span></div>';
+          if(!un.length){h+='<div class="prep" style="margin:2px 0 8px 24px">\u2713 voorbereiding klaar</div>';}
+          else un.slice(0,3).forEach(p=>{
+            h+='<div class="check-row"><span class="ckbox" onclick="toggleWP(\''+p.id+'\')"></span><span class="cktext">'+esc(p.text)+'</span></div>';
+          });
+          if(un.length>3)h+='<div class="prep" style="margin:0 0 8px 24px">+ '+(un.length-3)+' meer in de Weekplan</div>';
+        });
+      });
+    });
+    if(!any)h+='<div class="empty">Geen weekplanning beschikbaar voor deze week.</div>';
+  }
+  h+='<div class="panel" style="margin-bottom:16px"><h3>Today\'s schedule</h3>';
+  if(!blocksToday.length){
+    h+='<div class="empty">Nothing planned for today. Free day: rest guilt-free, or plan a block in the Planner if you want to get ahead.</div>';
+  }else{
+    blocksToday.forEach(b=>{
+      const c=course(b.courseId);
+      const sub=[c.name,b.room,b.teacher].filter(Boolean).join(" · ");
+      h+='<div class="today-block'+(b.done?" done":"")+'" onclick="blockClick(\''+b.id+'\',event)">'
+        +'<div class="tb-time">'+b.start+'–'+b.end+'</div>'
+        +'<div class="tb-main"><div class="tb-act">'+esc(b.activity)+'</div><div class="tb-sub">'+esc(sub)+'</div></div>'
+        +'<div class="tb-ck'+(b.done?" on":"")+'" onclick="toggleBlock(\''+b.id+'\',this);event.stopPropagation()">'+(b.done?"✓":"")+'</div></div>';
+    });
+  }
+  h+='</div>';
+  h+='<div class="panel" style="margin-bottom:16px"><h3>Your next steps</h3>';
+  const withSteps=steps14.filter(d=>d.materials.some(m=>!m.done));
+  if(!withSteps.length){
+    h+='<div class="empty">'+(steps14.length?"All steps for the next two weeks are ticked. Impressive.":"No deadlines within 14 days. Add them in Exams & Assignments when they appear.")+'</div>';
+  }else{
+    withSteps.forEach(d=>{
+      const c=course(d.courseId);
+      const dl=Math.round((parseD(d.date)-parseD(t))/86400000),u=urgency(dl);
+      h+='<div class="step-src"><span class="swatch" style="background:'+(c?c.color:"#64748b")+'"></span><b>'+esc(d.title)+'</b><span class="pill '+u+'">'+urgencyLabel(u)+'</span></div>';
+      d.materials.filter(m=>!m.done).slice(0,3).forEach(m=>{
+        h+='<div class="check-row"><span class="ckbox" onclick="toggleMaterial(\''+d.id+'\',\''+m.id+'\',this)"></span><span class="cktext">'+esc(m.text)+'</span></div>';
+      });
+    });
+    h+='<div class="note" style="font-size:12px;color:var(--muted);margin-top:10px">Showing the first unticked steps per item, nearest deadline first. Tick one here and it ticks everywhere.</div>';
+  }
+  h+='</div>';
+  const later=state.deadlines.filter(d=>d.date>t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+  if(later.length){
+    h+='<div class="panel"><h3>Coming up</h3>';
+    later.forEach(d=>{
+      const c=course(d.courseId);
+      const dl=Math.round((parseD(d.date)-parseD(t))/86400000),u=urgency(dl);
+      h+='<div class="today-block" onclick="go(\'xams\')"><span class="swatch" style="background:'+(c?c.color:"#64748b")+'"></span><div class="tb-main"><div class="tb-act">'+esc(d.title)+'</div><div class="tb-sub">'+(c?c.name:"")+' · '+d.type+'</div></div><span class="pill '+u+'">'+urgencyLabel(u)+' · '+dl+'d</span></div>';
+    });
+    h+='</div>';
+  }
+  return h;
+}
+function weekNumOf(t){
+  const m=mondayOf(t);
+  const i=WEEKMONDAYS.indexOf(m);
+  if(i>=0)return i+1;
+  const n=parseD(t),base=parseD(WEEKMONDAYS[0]);
+  let diff=Math.floor((n-base)/(7*86400000))+1;
+  if(n>=parseD(KERST[0])&&n<=parseD(KERST[1]))diff+=2;
+  return diff;
+}
+function weekDates(n){
+  const m=WEEKMONDAYS[n-1];
+  if(!m)return "";
+  return dLabel(m)+" - "+dLabel(addDays(m,4));
+}
+function currentWeekLabel(){
+  const t=todayStr();
+  if(inKerst(t))return "Kerstvakantie";
+  return "2."+Math.max(1,Math.min(10,weekNumOf(t)));
+}
+function toggleWP(id){
+  for(const w of state.weekplan)for(const l of w.ls)for(const p of l.p){
+    if(p.id===id){p.done=!p.done;
+      if(p.ref){const d=state.deadlines.find(x=>x.id===p.ref.d);
+        if(d){const m=d.materials.find(x=>x.id===p.ref.m);if(m)m.done=p.done;}}
+      save();render();return;}
+  }
+}
+function mondayOfWeek(n){const m=WEEKMONDAYS[n-1];return m||"";}
+function fridayOf(n){const m=mondayOfWeek(n);return m?addDays(m,4):"";}
+function deadlineTargetsInWeek(n){
+  const mon=mondayOfWeek(n),fri=fridayOf(n);
+  const out=[];
+  state.deadlines.filter(d=>!d.later).forEach(d=>{
+    d.materials.forEach(m=>{
+      if(!m.done&&m.target){
+        const mm=m.target.toLowerCase().replace("wk ","").replace("wk","").trim();
+        if(mm==="2."+n)out.push({d:d,m:m});
+      }
+    });
+  });
+  return out;
+}
+function renderWeek(){
+  const cur=currentWeekLabel(),curN=isNaN(+cur.split(".")[1])?0:+cur.split(".")[1];
+  const parked=state.weekplan.filter(w=>w.later);
+  const parkedByCourse={};
+  parked.forEach(w=>{(parkedByCourse[w.courseId]=parkedByCourse[w.courseId]||[]).push(w);});
+  let h='<h1>Weekplan kwartiel 2</h1><div class="sub">Per vak per week: wat je moet gelezen/af hebben vóór die week, en welke opdrachten eraan komen. Vink af in de Weekplan en het telt mee in je stappenplannen.</div>';
+  h+='<div class="panel" style="margin-bottom:14px"><div class="meta">Kwartiel 2: <b>9 nov t/m 15 jan</b> (kerstvakantie 21 dec - 3 jan) &nbsp;·&nbsp; huidige week: <b>'+cur+'</b></div></div>';
+  if(curN>=1&&curN<=10){
+    const targets=deadlineTargetsInWeek(curN);
+    h+='<div class="panel" style="margin-bottom:14px;border-color:rgba(129,140,248,.5)"><h3>Deze week afronden (vóór vr '+dLabel(fridayOf(curN))+')</h3>';
+    if(!targets.length)h+='<div class="empty">Geen streeftermijnen die deze week eindigen. Check de lesvoorbereidingen per vak hieronder.</div>';
+    targets.forEach(t=>{
+      const c=course(t.d.courseId);
+      h+='<div class="check-row"><span class="ckbox'+(t.m.done?" on":"")+'" onclick="toggleMaterial(\''+t.d.id+'\',\''+t.m.id+'\')">'+(t.m.done?"\u2713":"")+'</span><span class="cktext'+(t.m.done?" done":"")+'">'+esc(t.m.text)+'</span><span class="swatch" style="background:'+(c?c.color:"#64748b")+';margin-left:auto;flex-shrink:0"></span></div>';
+    });
+    h+='</div>';
+  }
+  state.courses.forEach(c=>{
+    const weeks=state.weekplan.filter(w=>w.courseId===c.id&&!w.later).sort((a,b)=>a.week.localeCompare(b.week,undefined,{numeric:true}));
+    const pw=parkedByCourse[c.id];
+    if(!weeks.length&&!pw)return;
+    h+='<div class="cgroup"><span class="swatch" style="background:'+c.color+'"></span>'+c.name+'</div>';
+    weeks.forEach(w=>{
+      const wn=+w.week.split(".")[1];
+      const isPast=wn<curN;
+      h+='<div class="wkrow"><div class="wkd">'+w.week+'<br>'+weekDates(wn)+'</div><div class="wkcard'+(wn===curN?" cur":"")+'"'+(isPast?' style="opacity:.55"':'')+'>';
+      w.ls.forEach(l=>{
+        const total=l.p.length,done=l.p.filter(p=>p.done).length;
+        h+='<div class="lt">'+l.t+' <span class="meta" style="width:auto;display:inline-block;margin-left:6px">'+(total?done+"/"+total+" klaar":"")+'</span></div>';
+        l.p.forEach(p=>{
+          h+='<div class="check-row"><span class="ckbox'+(p.done?" on":"")+'" onclick="toggleWP(\''+p.id+'\')">'+(p.done?"\u2713":"")+'</span><span class="cktext'+(p.done?" done":"")+'">'+esc(p.text)+'</span></div>';
+        });
+      });
+      h+='</div></div>';
+    });
+  });
+  if(parked.length){
+    h+='<div class="cgroup"><span class="swatch" style="background:#64748b"></span>Parked: later in het jaar<span class="meta" style="width:auto;margin-left:4px">'+parked.length+' week'+(parked.length>1?"en":"")+'</span></div>';
+    h+='<div class="note" style="font-size:12px;color:var(--muted);margin:-6px 0 8px">Deze lessen horen bij latere kwartielen; ze verschijnen vanzelf zodra je ze in de Weekplan uitparkeert (via de deadline-editor) of als de week actueel wordt.</div>';
+    state.courses.forEach(c=>{
+      const pw=parkedByCourse[c.id];
+      if(!pw)return;
+      h+='<div class="wkrow"><div class="wkd">'+c.name+'</div><div class="wkcard" style="opacity:.65">';
+      h+='<div class="lt">'+pw.map(w=>w.week).join(", ")+'</div>';
+      h+='<div class="prep">'+pw.reduce((a,w)=>a+w.ls.reduce((b,l)=>b+l.p.length,0),0)+' voorbereidingspunten geparkeerd (details zichtbaar na het uitparkeer-moment)</div>';
+      h+='</div></div>';
+    });
+  }
+  if(!state.weekplan.length)h+='<div class="empty">Nog geen weekplanning. Stuur de lesinfo per vak en die wordt hier ingebouwd.</div>';
+  return h;
+}
+function kindBadge(k,cid){
+  if(k==="werk")return '<span class="pill later">Werk</span>';
+  if(k==="sport")return '<span class="pill week">Sport</span>';
+  if(k==="facultatief")return '<span class="pill later">Facultatief</span>';
+  if(k==="info")return '<span class="pill soon">Info</span>';
+  const c=course(cid);
+  return '<span class="swatch" style="background:'+(c?c.color:"#64748b")+'"></span>';
+}
+function renderRooster(){
+  const t=todayStr();
+  const all=fullRoster();
+  let h='<h1>Rooster kwartiel 2</h1><div class="sub">Lessen (uit MyX), sport (ma 17:00-20:00) en werk (vr/za/zo 17:00-01:00). Werk wordt 3 weken vooruit gepland: hier alvast ingevuld t/m '+dLabel(ROSTER_END)+'; nieuwe weken? Zeg het in de chat.</div>';
+  const inKerstNow=inKerst(t);
+  let lastWeek="";
+  all.forEach(ev=>{
+    const wk=inKerst(ev.d)?"Kerstvakantie":("2."+weekNumOf(ev.d));
+    if(wk!==lastWeek){
+      if(wk==="Kerstvakantie"){
+        h+='<div class="cgroup"><span class="swatch" style="background:#64748b"></span>Kerstvakantie (21 dec - 3 jan): geen lessen; werk en sport lopen door</div>';
+      }else{
+        h+='<div class="cgroup"><span class="swatch" style="background:#4f46e5"></span>Lesweek '+wk+'<span class="meta" style="width:auto;margin-left:6px">'+weekDates(weekNumOf(WEEKMONDAYS[+wk.split(".")[1]-1])).length?weekDates(+wk.split(".")[1]):""+'</span></div>';
+      }
+      lastWeek=wk;
+    }
+    const today=ev.d===t;
+    h+='<div class="today-block'+(today?" cur":"")+'" style="cursor:default'+(today?';border-color:rgba(129,140,248,.55)':'')+'">'
+      +'<div class="tb-time">'+ev.s+'–'+ev.e+'</div>'
+      +'<div class="tb-main"><div class="tb-act">'+kindBadge(ev.k,ev.cid)+esc(ev.t)+'</div><div class="tb-sub">'+dLabel(ev.d)+' ('+dayName(ev.d)+')'+(ev.r?" · "+esc(ev.r):"")+'</div></div>'
+      +'</div>';
+  });
+  return h;
+}
+function renderNotes(){
+  let h='<h1>Notes</h1><div class="sub">Per vak per college-week je aantekeningen. Alles wordt automatisch opgeslagen terwijl je typt.</div>';
+  h+='<div class="panel" style="margin-bottom:14px"><div class="form"><div style="flex:1"><label>Zoek in alle aantekeningen</label><input id="nsearch" placeholder="Zoek een woord in al je notities..." oninput="notesSearchRun()" style="width:100%"></div></div><div id="nresults"></div></div>';
+  h+='<div class="panel"><div class="ntree" id="ntree">';
+  state.notes.forEach(f=>{
+    const c=course(f.courseId);
+    h+='<div class="nfolder'+(f.open?" open":"")+'" onclick="toggleFolder(\''+f.id+'\')"><span class="arrow">▶</span><span class="swatch" style="background:'+(c?c.color:"#64748b")+'"></span>'+esc(f.label)+'</div>';
+    if(f.open){
+      h+='<div class="nsub">';
+      f.children.forEach(sub=>{
+        h+='<div class="nsubfold'+(sub.open?" open":"")+'" onclick="toggleSub(\''+f.id+'\',\''+sub.id+'\')"><span class="arrow">▶</span>Week '+sub.week+'</div>';
+        if(sub.open){
+          h+='<div class="neditor">';
+          sub.notes.forEach(n=>{
+            h+='<textarea id="nta-'+n.id+'" placeholder="Je aantekeningen bij week '+sub.week+' van '+esc(f.label)+'..." oninput="saveNoteEdit(\''+f.id+'\',\''+sub.id+'\',\''+n.id+'\')">'+esc(n.text)+'</textarea>';
+            h+='<div class="nmeta">'+(n.updated?"laatst gewijzigd: "+esc(n.updated)+" · ":"")+'<span class="del" onclick="delNote(\''+n.id+'\')">notitie wissen</span></div>';
+          });
+          h+='<button class="btn secondary" style="margin-top:6px" onclick="addNote(\''+f.id+'\',\''+sub.id+'\')">+ extra notitie</button>';
+          h+='</div>';
+        }
+      });
+      h+='</div>';
+    }
+  });
+  if(!state.notes.length)h+='<div class="empty">Nog geen vakmappen. Ze ontstaan automatisch bij nieuwe modules.</div>';
+  h+='</div></div>';
+  return h;
+}
+function toggleFolder(id){state.notes.forEach(f=>{if(f.id===id)f.open=!f.open;});save();render();}
+function toggleSub(fid,sid){
+  state.notes.forEach(f=>{if(f.id===fid)f.children.forEach(x=>{if(x.id===sid)x.open=!x.open;});});
+  save();render();
+}
+function notesSearchRun(){
+  const q=document.getElementById("nsearch").value.trim();
+  const box=document.getElementById("nresults");
+  if(!box)return;
+  if(q.length<2){box.innerHTML="";return;}
+  const res=searchNotes(q);
+  if(!res.length){box.innerHTML='<div class="empty">Geen resultaten voor "'+esc(q)+'".</div>';return;}
+  let out='<div class="dchkhead" style="margin-top:10px">'+res.length+(res.length===1?' resultaat':' resultaten')+'</div>';
+  res.forEach(e=>{
+    const c=course(e.folder.courseId);
+    out+='<div class="nsearch-result" onclick="openNotesPath(\''+e.folder.id+'\',\''+e.sub.id+'\');document.getElementById(\'nsearch\').value=\'\';document.getElementById(\'nresults\').innerHTML=\'\';render()"><div class="nsr-src">'+(c?c.name:e.folder.label)+' · week '+e.sub.week+'</div><div class="nsr-text">'+hl(e.note.text,q)+'</div></div>';
+  });
+  box.innerHTML=out;
+}
+function notesIndex(){
+  const out=[];
+  (state.notes||[]).forEach(f=>{
+    f.children.forEach(sub=>{
+      sub.notes.forEach(n=>{out.push({folder:f,sub:sub,note:n});});
+    });
+  });
+  return out;
+}
+function openNotesPath(folderId,subId){
+  state.notes.forEach(f=>{
+    if(f.id===folderId)f.open=true;
+    f.children.forEach(x=>{if(x.id===subId)x.open=true;});
+  });
+}
+function hl(text,q){
+  const i=text.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0)return esc(text);
+  const st=Math.max(0,i-40),en=Math.min(text.length,i+q.length+60);
+  return (st>0?"...":"")+esc(text.slice(st,i))+"<mark>"+esc(text.slice(i,i+q.length))+"</mark>"+esc(text.slice(i+q.length,en))+(en<text.length?"...":"");
+}
+function searchNotes(q){
+  const idx=notesIndex(),res=[];
+  idx.forEach(e=>{
+    const t=e.note.text||"";
+    if(t.toLowerCase().indexOf(q.toLowerCase())>=0)res.push(e);
+  });
+  return res;
+}
+function saveNoteEdit(fid,sid,nid){
+  const ta=document.getElementById("nta-"+nid);
+  if(!ta)return;
+  const e=notesIndex().find(x=>x.note.id===nid);
+  if(!e)return;
+  e.note.text=ta.value;
+  e.note.updated=todayStr()+" "+new Date().toTimeString().slice(0,5);
+  save();
+  if(view==="notes")render();
+}
+function addNote(fid,sid){
+  const e=notesIndex().find(x=>x.sub.id===sid);
+  if(!e)return;
+  e.sub.notes.push({id:uid(),text:"",updated:null});
+  openNotesPath(fid,sid);
+  save();render();
+  const ta=document.getElementById("nta-"+state.notes.find(f=>f.id===fid).children.find(x=>x.id===sid).notes.slice(-1)[0].id);
+  if(ta)ta.focus();
+}
+function delNote(nid){
+  const e=notesIndex().find(x=>x.note.id===nid);
+  if(!e)return;
+  if(!confirm("Deze aantekening wissen?"))return;
+  e.sub.notes=e.sub.notes.filter(n=>n.id!==nid);
+  save();render();
+}
+
+function renderDashboard(){
+  const t=todayStr(),mon=mondayOf(t);
+  const today=minutesOn(t)/60, wk=weekHours(mon)/60, lw=weekHours(addDays(mon,-7))/60;
+  const st=currentStreak(),blocks=state.blocks.filter(b=>b.date>=mon&&b.date<addDays(mon,7));
+  const done=blocks.filter(b=>b.done).length;
+  let h='<h1>Dashboard</h1><div class="sub">Your study activity at a glance</div><div class="cards">';
+  h+=stat("Hours today",today.toFixed(1)+"h","goal pace: keep going");
+  h+=stat("This week",wk.toFixed(1)+"h","last week: "+lw.toFixed(1)+"h");
+  h+=stat("Streak",st+" days","longest: "+longestStreak()+" days");
+  h+=stat("Planner done",blocks.length?Math.round(done/blocks.length*100)+"%":"-","done: "+done+" / "+blocks.length+" blocks");
+  h+=stat("Total hours",(state.sessions.reduce((a,s)=>a+s.minutes,0)/60).toFixed(1)+"h",state.sessions.length+" sessions");
+  h+=stat("XP",xp(),"10 XP per hour");
+  h+='</div><div class="grid2"><div class="panel"><h3>Hours per day (last 14 days)</h3><canvas id="chart-days" width="640" height="240"></canvas></div>';
+  h+='<div class="panel"><h3>Where your time goes</h3><canvas id="chart-split" width="300" height="240"></canvas></div></div>';
+  h+='<div class="panel" style="margin-bottom:16px"><h3>Weekly goal progress</h3>';
+  if(!state.courses.length)h+='<div class="empty">Add courses first.</div>';
+  state.courses.forEach(c=>{
+    const w=state.sessions.filter(s=>s.courseId===c.id&&s.date>=mon&&s.date<addDays(mon,7)).reduce((a,s)=>a+s.minutes,0)/60;
+    const p=c.goal>0?Math.min(w/c.goal,1):0;
+    h+='<div class="row"><span class="swatch" style="background:'+c.color+'"></span><div class="name">'+c.name+'</div><div class="bar"><span style="width:'+Math.round(p*100)+'%;background:'+c.color+'"></span></div><div class="meta">'+w.toFixed(1)+' / '+c.goal+' h</div></div>';
+  });
+  h+='</div><div class="panel"><h3>Upcoming deadlines</h3>'+deadlineTable(true)+'</div>';
+  return h;
+}
+
+function urgency(dl){return dl<0?"overdue":dl<=7?"week":dl<=21?"soon":"later";}
+function isLater(d){return d.later===true;}
+function urgencyLabel(u){return u==="overdue"?"Overdue":u==="week"?"This week":u==="soon"?"Soon":"Later";}
+function deadlineTable(short){
+  const t=todayStr();
+  const list=[...state.deadlines].sort((a,b)=>{
+    const la=isLater(a)?1:0,lb=isLater(b)?1:0;
+    if(la!==lb)return la-lb;
+    return a.date.localeCompare(b.date);
+  });
+  if(!list.length)return '<div class="empty">No deadlines yet.</div>';
+  let h='<table><tr><th>Item</th><th>Course</th><th>Type</th><th>Date</th><th>Days left</th><th>Status</th><th>Ready</th>'+(short?"":"<th></th>")+'</tr>';
+  list.forEach(d=>{
+    const dl=Math.round((parseD(d.date)-parseD(t))/86400000),c=course(d.courseId);
+    if(short&&list.indexOf(d)>=4)return;
+    if(isLater(d)){
+      h+='<tr style="opacity:.55"><td><b>'+d.title+'</b> <span class="pill later mini">LATER</span></td><td>'+(c?c.name:"?")+'</td><td>'+d.type+'</td><td>'+dLabel(d.date)+'</td><td>'+dl+'</td><td><span class="pill later">Later semester</span></td><td>'+d.readiness+'%</td>'+(short?"":'<td><span class="del" onclick="delItem(\'deadlines\',\''+d.id+'\')">✕</span></td>')+'</tr>';
+      return;
+    }
+    const u=urgency(dl);
+    h+='<tr><td><b>'+d.title+'</b></td><td>'+(c?c.name:"?")+'</td><td>'+d.type+'</td><td>'+dLabel(d.date)+'</td><td>'+dl+'</td><td><span class="pill '+u+'">'+urgencyLabel(u)+'</span></td><td>'+d.readiness+'%</td>'+(short?"":'<td><span class="del" onclick="delItem(\'deadlines\',\''+d.id+'\')">✕</span></td>')+'</tr>';
+  });
+  return h+"</table>";
+}
+
+function renderPlanner(){
+  if(!state.plannerWeek)state.plannerWeek=mondayOf(todayStr());
+  const mon=state.plannerWeek,days=[...Array(7)].map((_,i)=>addDays(mon,i));
+  const blocks=state.blocks;
+  let h='<h1>Weekly planner</h1><div class="sub">Click any slot to add a study block</div><div class="navbtns">';
+  h+='<button class="btn ghost" onclick="shiftWeek(-7)">← Prev</button><button class="btn ghost" onclick="shiftWeek(7)">Next →</button><button class="btn secondary" onclick="state.plannerWeek=mondayOf(todayStr());save();render()">This week</button></div>';
+  h+='<div class="panel" style="margin-bottom:16px"><div class="weekhead"><div></div>';
+  days.forEach(d=>{
+    const bl=blocks.filter(b=>b.date===d),dn=bl.filter(b=>b.done).length;
+    h+='<div class="d'+(d===todayStr()?" today":"")+'">'+dayName(d)+' <b>'+parseD(d).getDate()+'</b><br>'+dn+'/'+bl.length+' done</div>';
+  });
+  h+='</div><div class="pgrid" id="pgrid">';
+  for(let hr=8;hr<22;hr++){
+    const r=hr-7;
+    h+='<div class="phour" style="grid-row:'+r+'">'+String(hr).padStart(2,"0")+':00</div>';
+    days.forEach((d,di)=>{
+      h+='<div class="pcell" style="grid-column:'+(di+2)+';grid-row:'+r+'" onclick="editBlock(\''+d+'\','+hr+')"></div>';
+    });
+  }
+  days.forEach((d,di)=>{
+    const dayBlocks=blocks.filter(b=>b.date===d);
+    const lanes=[];
+    dayBlocks.forEach(b=>{
+      const M=x=>{const[hh,mm]=x.split(":").map(Number);return hh*60+mm;};
+      let li=lanes.findIndex(l=>l.every(o=>M(b.end)<o.s||M(b.start)>=o.e));
+      if(li<0){li=lanes.length;lanes.push([]);}
+      lanes[li].push({s:M(b.start),e:M(b.end)});
+      b._lane=li;b._lanes=0;
+    });
+    const M=x=>{const[hh,mm]=x.split(":").map(Number);return hh*60+mm;};
+    const rowH=40; // 34px cell + 6px gap
+    const y=t=>(M(t)-8*60)/60*rowH;
+    const nL=Math.max(1,lanes.length);
+    for(let li=0;li<nL;li++){
+      const laneBlocks=dayBlocks.filter(b=>b._lane===li).sort((a,b2)=>a.start.localeCompare(b2.start));
+      if(!laneBlocks.length)continue;
+      h+='<div class="babs" style="grid-column:'+(di+2)+' / '+(di+3)+';grid-row:1 / 15;top:0;bottom:0;z-index:'+(2+li)+';left:'+(li*3)+'px;margin-right:'+((nL-1-li)*3)+'px">';
+      laneBlocks.forEach(b=>{
+        const c=course(b.courseId);
+        const top=y(b.start),bot=y(b.end);
+        h+='<div class="block'+(b.done?" done":"")+'" style="background:'+c.color+';position:absolute;top:'+top+'px;height:'+Math.max(20,bot-top-2)+'px" onclick="blockClick(\''+b.id+'\',event)">'+b.start+'–'+b.end+' '+c.name+'<small>'+esc(b.activity)+(b.room?" · "+esc(b.room):"")+'</small><span class="x" onclick="toggleBlock(\''+b.id+'\',this);event.stopPropagation()">✓</span><span class="x" style="right:16px" onclick="delItem(\'blocks\',\''+b.id+'\');event.stopPropagation()">✕</span></div>';
+      });
+      h+='</div>';
+    }
+  });
+  h+='</div></div>';
+  h+='<div class="panel"><h3>Add study block</h3><div class="form">'+
+    '<div><label>Date</label><select id="b-date">'+days.map(d=>'<option value="'+d+'">'+dayName(d)+' '+dLabel(d)+'</option>').join("")+'</select></div>'+
+    '<div><label>Start</label><input type="time" id="b-start" value="09:00"></div>'+
+    '<div><label>End</label><input type="time" id="b-end" value="11:00"></div>'+
+    '<div><label>Course</label><select id="b-course">'+state.courses.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("")+'</select></div>'+
+    '<div><label>Activity</label><input id="b-act" placeholder="e.g. Midterm prep" size="18"></div>'+
+    '<button class="btn" onclick="addBlock()">Add block</button></div></div>';
+  if(modalId){
+    const b=state.blocks.find(x=>x.id===modalId);
+    if(b){
+      h+='<div class="modal-overlay" onclick="closeBlockModal()"><div class="modal" onclick="event.stopPropagation()">'
+        +'<h3>Study block details</h3>'
+        +'<div class="form" style="flex-direction:column;align-items:stretch;gap:8px">'
+        +'<div style="display:flex;gap:8px"><div style="flex:1"><label>Date</label><input type="date" id="md-date" value="'+b.date+'"></div>'
+        +'<div><label>Done?</label><select id="md-done"><option value="Yes"'+(b.done?" selected":"")+'>Yes</option><option value="No"'+(!b.done?" selected":"")+'>No</option></select></div></div>'
+        +'<div style="display:flex;gap:8px"><div><label>Start</label><input type="time" id="md-start" value="'+b.start+'"></div>'
+        +'<div><label>End</label><input type="time" id="md-end" value="'+b.end+'"></div></div>'
+        +'<div><label>Course</label><select id="md-course">'+state.courses.map(cc=>'<option value="'+cc.id+'"'+(cc.id===b.courseId?" selected":"")+'>'+cc.name+'</option>').join("")+'</select></div>'
+        +'<div><label>Activity</label><input id="md-act" value="'+esc(b.activity)+'"></div>'
+        +'<div style="display:flex;gap:8px"><div style="flex:1"><label>Classroom</label><input id="md-room" value="'+esc(b.room||"")+'" placeholder="e.g. HG00.101"></div>'
+        +'<div style="flex:1"><label>Teacher</label><input id="md-teacher" value="'+esc(b.teacher||"")+'" placeholder="e.g. Dr. Jansen"></div></div>'
+        +'<div><label>Notes</label><textarea id="md-notes" placeholder="Preparation, chapters, reminders...">'+esc(b.notes||"")+'</textarea></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="saveBlockModal()">Save</button>'
+        +'<button class="btn ghost" onclick="closeBlockModal()">Close</button>'
+        +'<button class="btn ghost" style="color:var(--bad);border-color:rgba(248,113,113,.4);margin-left:auto" onclick="deleteBlockModal()">Delete</button></div>'
+        +'</div></div>';
+    } else modalId=null;
+  }
+  return h;
+}
+function esc(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function blockClick(id,ev){if(ev)ev.stopPropagation();modalId=id;render();}
+function closeBlockModal(){modalId=null;render();}
+function saveBlockModal(){
+  const b=state.blocks.find(x=>x.id===modalId);
+  if(!b){modalId=null;render();return;}
+  const g=id=>{const e=document.getElementById(id);return e?e.value:"";};
+  const d=g("md-date"),st=g("md-start"),en=g("md-end"),c=g("md-course"),a=g("md-act").trim();
+  if(!d||!st||!en||!c||!a||st>=en){alert("Fill in a valid date, time range, course and activity.");return;}
+  b.date=d;b.start=st;b.end=en;b.courseId=c;b.activity=a;
+  b.room=g("md-room").trim();b.teacher=g("md-teacher").trim();b.notes=g("md-notes");
+  b.done=g("md-done")==="Yes";
+  state.plannerWeek=mondayOf(d);
+  save();modalId=null;render();
+}
+function deleteBlockModal(){const id=modalId;modalId=null;delItem("blocks",id);}
+function shiftWeek(n){state.plannerWeek=addDays(state.plannerWeek,n);save();render();}
+function editBlock(d,hr){
+  document.getElementById("b-date").value=d;
+  document.getElementById("b-start").value=String(hr).padStart(2,"0")+":00";
+  document.getElementById("b-end").value=String(hr+1).padStart(2,"0")+":00";
+  document.getElementById("b-act").focus();
+  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+function addBlock(){
+  const d=document.getElementById("b-date").value,s=document.getElementById("b-start").value,e=document.getElementById("b-end").value,
+        c=document.getElementById("b-course").value,a=document.getElementById("b-act").value.trim();
+  if(!d||!s||!e||!c||!a||s>=e){alert("Fill in all fields with a valid time range.");return;}
+  state.blocks.push({id:uid(),date:d,start:s,end:e,courseId:c,activity:a,done:false});save();render();
+}
+function toggleBlock(id,el){const b=state.blocks.find(x=>x.id===id);if(b){const was=b.done;b.done=!b.done;save();if(b.done&&!was)confetti(el);render();}}
+function delItem(kind,id){state[kind]=state[kind].filter(x=>x.id!==id);save();render();}
+
+let modalId=null;
+let deadlineModalId=null;
+let timer={mode:"pomodoro",running:false,remain:25*60,elapsed:0,phase:"work",int:null};
+function renderTimer(){
+  const t=todayStr();
+  let h='<h1>Focus timer</h1><div class="sub">Pomodoro sessions log automatically; stopwatch logs when you stop</div>';
+  h+='<div class="grid2"><div class="panel"><div class="form">'+
+    '<div><label>Course</label><select id="t-course">'+state.courses.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("")+'</select></div>'+
+    '<div><label>Activity</label><input id="t-act" placeholder="What are you working on?" size="24"></div>'+
+    '<div><label>Mode</label><select id="t-mode" onchange="setMode(this.value)"><option value="pomodoro">Pomodoro 25/5</option><option value="deep">Deep 50/10</option><option value="stopwatch">Stopwatch</option></select></div>'+
+    '</div><div class="timer-phase" id="t-phase">'+(timer.mode==="stopwatch"?"Stopwatch":(timer.phase==="work"?"Focus session":"Break"))+'</div>'+
+    '<div class="timer-wrap"><svg viewBox="0 0 220 220" class="ringsvg"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#22d3ee"/></linearGradient></defs><circle class="ring-bg" cx="110" cy="110" r="100"></circle><circle class="ring-fg" id="t-ring" cx="110" cy="110" r="100"></circle></svg><div class="timer-display" id="t-display">'+fmtTimer(timer.mode==="stopwatch"?timer.elapsed:timer.remain)+'</div></div>'+
+    '<div class="timer-btns"><button class="btn" id="t-go" onclick="timerStart()">'+(timer.running?"Pause":"Start")+'</button>'+
+    '<button class="btn secondary" onclick="timerStopLog()">Stop &amp; log</button>'+
+    '<button class="btn ghost" onclick="timerReset()">Reset</button></div></div>';
+  h+='<div class="panel"><h3>Log a past session</h3><div class="form">'+
+    '<div><label>Date</label><input type="date" id="m-date" value="'+t+'"></div>'+
+    '<div><label>Start</label><input type="time" id="m-start" value="14:00"></div>'+
+    '<div><label>End</label><input type="time" id="m-end" value="15:30"></div>'+
+    '<div><label>Course</label><select id="m-course">'+state.courses.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("")+'</select></div>'+
+    '<div><label>Activity</label><input id="m-act" size="16"></div>'+
+    '<button class="btn secondary" onclick="addManual()">Log</button></div></div></div>';
+  h+='<div class="panel"><h3>Sessions today ('+(minutesOn(t)/60).toFixed(1)+' h)</h3><div class="session-list">';
+  const ss=sessionsOn(t);
+  if(!ss.length)h+='<div class="empty">Nothing logged yet today.</div>';
+  ss.forEach(s=>{const c=course(s.courseId);
+    h+='<div class="row"><span class="swatch" style="background:'+c.color+'"></span><div class="name">'+c.name+'</div><div style="flex:1">'+s.activity+' <span style="color:var(--muted)">('+s.type+')</span></div><div class="meta">'+s.minutes+' min</div><span class="del" onclick="delItem(\'sessions\',\''+s.id+'\')">✕</span></div>';
+  });
+  return h+"</div></div>";
+}
+function fmtTimer(s){const m=Math.floor(s/60),ss=s%60;return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");}
+function setMode(m){timer.mode=m;timerReset();}
+function timerReset(){timer.running=false;clearInterval(timer.int);timer.phase="work";timer.elapsed=0;timer.remain=(timer.mode==="deep"?50:25)*60;if(view==="timer")render();}
+function timerStart(){
+  timer.running=!timer.running;
+  document.getElementById("t-go").textContent=timer.running?"Pause":"Start";
+  if(timer.running){timer.int=setInterval(tick,1000);}else clearInterval(timer.int);
+}
+function tick(){
+  if(timer.mode==="stopwatch"){timer.elapsed++;}
+  else{timer.remain--;if(timer.remain<=0){
+    if(timer.phase==="work"){logSession(25,"Pomodoro");timer.phase="break";timer.remain=(timer.mode==="deep"?10:5)*60;alert("Session logged! Take a break.");}
+    else{timer.phase="work";timer.remain=(timer.mode==="deep"?50:25)*60;alert("Break over. Back to focus.");}
+  }}
+  const el=document.getElementById("t-display");if(el)el.textContent=fmtTimer(timer.mode==="stopwatch"?timer.elapsed:timer.remain);
+  const ring=document.getElementById("t-ring");
+  if(ring){const total=timer.mode==="stopwatch"?25*60:(timer.mode==="deep"?50:25)*60;
+    const cur=timer.mode==="stopwatch"?timer.elapsed:(total-timer.remain);
+    const frac=Math.max(0,Math.min(1,cur/total));
+    ring.style.strokeDashoffset=String(628.3*(1-frac));}
+  const ph=document.getElementById("t-phase");if(ph)ph.textContent=timer.mode==="stopwatch"?"Stopwatch":(timer.phase==="work"?"Focus session":"Break");
+}
+function timerStopLog(){
+  const m=Math.max(1,Math.round((timer.mode==="stopwatch"?timer.elapsed:((timer.mode==="deep"?50:25)*60-timer.remain))/60));
+  if(timer.mode!=="stopwatch"&&(timer.phase!=="work"||m<1)){alert("Nothing to log yet.");return;}
+  logSession(m,timer.mode==="stopwatch"?"Regular":timer.mode==="deep"?"Deep":"Pomodoro");
+  timerReset();alert("Logged "+m+" min.");
+}
+function logSession(min,type){
+  const c=document.getElementById("t-course"),a=document.getElementById("t-act");
+  if(!c||!c.value){alert("Pick a course first.");return;}
+  state.sessions.push({id:uid(),date:todayStr(),courseId:c.value,activity:a.value.trim()||c.name+" study",minutes:min,type});save();
+}
+function addManual(){
+  const d=document.getElementById("m-date").value,s=document.getElementById("m-start").value,e=document.getElementById("m-end").value,
+        c=document.getElementById("m-course").value,a=document.getElementById("m-act").value.trim();
+  if(!d||!s||!e||!c||s>=e){alert("Fill in a valid date and time range.");return;}
+  const toMin=x=>{const[h,m]=x.split(":").map(Number);return h*60+m;};
+  state.sessions.push({id:uid(),date:d,courseId:c,activity:a||"Study",minutes:toMin(e)-toMin(s),type:"Regular"});save();render();
+}
+
+function renderDeadlines(){
+  let h='<h1>Deadlines</h1><div class="sub">All exams and assignments with countdown and readiness</div><div class="panel" style="margin-bottom:16px">'+deadlineTable(false)+'</div>';
+  h+='<div class="panel"><h3>Add deadline</h3><div class="form">'+
+    '<div><label>Item</label><input id="d-title" placeholder="e.g. Midterm exam" size="22"></div>'+
+    '<div><label>Course</label><select id="d-course">'+state.courses.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("")+'</select></div>'+
+    '<div><label>Type</label><select id="d-type"><option>Exam</option><option>Assignment</option><option>Project</option><option>Other</option></select></div>'+
+    '<div><label>Date</label><input type="date" id="d-date"></div>'+
+    '<button class="btn" onclick="addDeadline()">Add</button></div></div>';
+  return h;
+}
+function renderXams(){
+  let h='<h1>Exams &amp; Assignments</h1><div class="sub">Per course: what it is, what to learn, and how ready you are. Click ✎ for the full editor.</div>';
+  state.courses.forEach(c=>{
+    const now=[...state.deadlines].filter(d=>d.courseId===c.id&&!isLater(d)).sort((a,b)=>a.date.localeCompare(b.date));
+    if(now.length){
+      h+='<div class="cgroup"><span class="swatch" style="background:'+c.color+'"></span>'+c.name+'<span class="meta" style="width:auto;margin-left:4px">'+now.length+' item'+(now.length>1?"s":"")+'</span></div>';
+      now.forEach(d=>{h+=deadlineCard(d,c);});
+    }
+  });
+  const later=state.deadlines.filter(d=>isLater(d)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(later.length){
+    h+='<div class="cgroup"><span class="swatch" style="background:#64748b"></span>Parked: later in het jaar<span class="meta" style="width:auto;margin-left:4px">'+later.length+' item'+(later.length>1?"s":"")+'</span></div>';
+    h+='<div class="note" style="font-size:12px;color:var(--muted);margin:-6px 0 8px">Deze horen bij latere kwartielen/semesters. Ze staan uit je zichtbaar werk, maar tellen wel mee voor je BSA-overzicht.</div>';
+    later.forEach(d=>{h+=deadlineCard(d,course(d.courseId));});
+  }
+  const orphans=state.deadlines.filter(d=>!course(d.courseId));
+  if(orphans.length){
+    h+='<div class="cgroup"><span class="swatch" style="background:#64748b"></span>Without course</div>';
+    orphans.forEach(d=>{h+=deadlineCard(d,null);});
+  }
+  if(!state.deadlines.length)h+='<div class="panel" style="margin-bottom:16px"><div class="empty">No exams or assignments yet. Add your first below.</div></div>';
+  h+='<div class="panel"><h3>Add exam or assignment</h3><div class="form">'+
+    '<div><label>Item</label><input id="d-title" placeholder="e.g. Midterm exam" size="22"></div>'+
+    '<div><label>Course</label><select id="d-course">'+state.courses.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("")+'</select></div>'+
+    '<div><label>Type</label><select id="d-type"><option>Exam</option><option>Assignment</option><option>Project</option><option>Other</option></select></div>'+
+    '<div><label>Date</label><input type="date" id="d-date"></div>'+
+    '<button class="btn" onclick="addDeadline()">Add</button></div>'
+    +'<div class="note" style="font-size:12px;color:var(--muted)">After adding, click the ✎ pencil to write the description and build your learning-goals checklist.</div></div>';
+  if(deadlineModalId){
+    const d=state.deadlines.find(x=>x.id===deadlineModalId);
+    if(d){
+      h+='<div class="modal-overlay" onclick="closeDeadlineModal()"><div class="modal" onclick="event.stopPropagation()">'
+        +'<h3>Edit exam / assignment</h3>'
+        +'<div class="form" style="flex-direction:column;align-items:stretch;gap:8px">'
+        +'<div><label>Title</label><input id="md2-title" value="'+esc(d.title)+'"></div>'
+        +'<div style="display:flex;gap:8px"><div style="flex:1"><label>Course</label><select id="md2-course">'+state.courses.map(cc=>'<option value="'+cc.id+'"'+(cc.id===d.courseId?" selected":"")+'>'+cc.name+'</option>').join("")+'</select></div>'
+        +'<div><label>Type</label><select id="md2-type">'+["Exam","Assignment","Project","Other"].map(ty=>'<option'+(ty===d.type?" selected":"")+'>'+ty+'</option>').join("")+'</select></div></div>'
+        +'<div style="display:flex;gap:8px"><div><label>Date</label><input type="date" id="md2-date" value="'+d.date+'"></div>'
+        +'<div><label>Readiness %</label><input type="number" id="md2-ready" min="0" max="100" value="'+d.readiness+'" style="width:90px"></div></div>'
+        +'<div class="check-row"><span class="ckbox'+(d.later?" on":"")+'" id="md2-later" onclick="this.classList.toggle(\'on\');this.dataset.on=this.classList.contains(\'on\')?\'1\':\'\'">✓</span><span class="cktext" style="cursor:default">Parkeren: hoort bij een LATER kwartiel/semester (uit Today en uit de urgentie-sorted)</span></div>'
+        +'<div><label>Description: what exactly is this exam/assignment?</label><textarea id="md2-desc" placeholder="Topics, format, allowed materials, length, submission requirements...">'+esc(d.desc||"")+'</textarea></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="saveDeadlineModal()">Save</button>'
+        +'<button class="btn ghost" onclick="closeDeadlineModal()">Close</button>'
+        +'<button class="btn ghost" style="color:var(--bad);border-color:rgba(248,113,113,.4);margin-left:auto" onclick="delItem(\'deadlines\',\''+d.id+'\');closeDeadlineModal()">Delete</button></div>'
+        +'</div></div>';
+    } else deadlineModalId=null;
+  }
+  return h;
+}
+function deadlineCard(d,c){
+  const col=c?c.color:"#64748b";
+  const dl=Math.round((parseD(d.date)-parseD(todayStr()))/86400000),u=urgency(dl);
+  const total=d.materials.length,done=d.materials.filter(m=>m.done).length;
+  let h='<div class="dcard" id="dc-'+d.id+'"><div class="dhead"><span class="pill '+u+'">'+urgencyLabel(u)+'</span><b>'+esc(d.title)+'</b><span class="pill later">'+d.type+'</span><span class="dmeta">'+dLabel(d.date)+' · '+dl+' days</span><span class="del" onclick="openDeadline(\''+d.id+'\')" title="Edit details">✎</span><span class="del" onclick="delItem(\'deadlines\',\''+d.id+'\')">✕</span></div>';
+  if(d.desc)h+='<div class="ddesc">'+esc(d.desc)+'</div>';
+  h+='<div class="dchkhead"><span>'+(d.type==="Exam"?"Exam materials & learning goals":"What needs to be done")+'</span><span>'+done+'/'+total+'</span></div>';
+  h+='<div class="bar" style="height:6px;margin:4px 0 6px"><span style="width:'+(total?Math.round(done/total*100):0)+'%;background:'+col+'"></span></div>';
+  d.materials.forEach((m,mi)=>{
+    const editing=(editMaterialId===m.id);
+    h+='<div class="check-row"><span class="cknum">'+(mi+1)+'.</span><span class="ckbox'+(m.done?" on":"")+'" onclick="toggleMaterial(\''+d.id+'\',\''+m.id+'\',this)">'+(m.done?"✓":"")+'</span>';
+    if(editing){
+      h+='<input class="ckedit cktarget" id="ct-'+m.id+'" value="'+esc(m.target||"")+'" placeholder="wk 2.5" title="Streeftermijn (bijv. week 2.5)">';
+      h+='<input class="ckedit" id="ce-'+m.id+'" value="'+esc(m.text)+'" onkeydown="if(event.key===\'Enter\')saveMaterialEdit(\''+d.id+'\',\''+m.id+'\');if(event.key===\'Escape\')cancelMaterialEdit()" onblur="saveMaterialEdit(\''+d.id+'\',\''+m.id+'\')">';
+    }else{
+      if(m.target)h+='<span class="pill later mini" title="Streeftermijn">'+esc(m.target)+'</span>';
+      h+='<span class="cktext'+(m.done?" done":"")+'" title="Click to edit this step" onclick="editMaterial(\''+m.id+'\')">'+esc(m.text)+'</span>';
+    }
+    h+='<span class="ckarrow" onclick="moveMaterial(\''+d.id+'\',\''+m.id+'\',-1)" title="Move up">▲</span><span class="ckarrow" onclick="moveMaterial(\''+d.id+'\',\''+m.id+'\',1)" title="Move down">▼</span><span class="del" onclick="delMaterial(\''+d.id+'\',\''+m.id+'\')">✕</span></div>';
+  });
+  h+='<div class="check-row"><input id="mi-'+d.id+'" placeholder="Add step, material or learning goal and press Enter..." onkeydown="if(event.key===\'Enter\')addMaterial(\''+d.id+'\')"><button class="btn secondary" style="padding:6px 12px" onclick="addMaterial(\''+d.id+'\')">+</button></div>';
+  h+='<div class="row" style="margin-top:10px"><div class="name" style="width:80px">Readiness</div><div class="bar"><span style="width:'+d.readiness+'%;background:'+col+'"></span></div><div class="meta">'+d.readiness+'%</div></div>';
+  h+='</div>';
+  return h;
+}
+function openDeadline(id){deadlineModalId=id;render();}
+function closeDeadlineModal(){deadlineModalId=null;render();}
+function saveDeadlineModal(){
+  const d=state.deadlines.find(x=>x.id===deadlineModalId);
+  if(!d){deadlineModalId=null;render();return;}
+  const g=id=>{const e=document.getElementById(id);return e?e.value:"";};
+  const ti=g("md2-title").trim(),c=g("md2-course"),dt=g("md2-date");
+  if(!ti||!c||!dt){alert("Fill in title, course and date.");return;}
+  d.title=ti;d.courseId=c;d.type=g("md2-type");d.date=dt;
+  d.desc=g("md2-desc");d.readiness=Math.max(0,Math.min(100,+g("md2-ready")||0));
+  const ck=document.getElementById("md2-later");
+  d.later=ck?ck.classList.contains("on"):(d.later||false);
+  save();deadlineModalId=null;render();
+}
+function toggleMaterial(did,mid,el){
+  const d=state.deadlines.find(x=>x.id===did);if(!d)return;
+  const m=d.materials.find(x=>x.id===mid);if(!m)return;
+  const wasAll=d.materials.every(x=>x.done);
+  m.done=!m.done;save();
+  const allNow=d.materials.length&&d.materials.every(x=>x.done);
+  if(allNow&&!wasAll)confetti(el);
+  render();
+}
+let editMaterialId=null;
+function editMaterial(mid){editMaterialId=mid;render();
+  const e=document.getElementById("ce-"+mid);
+  if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}
+}
+function saveMaterialEdit(did,mid){
+  const e=document.getElementById("ce-"+mid);
+  if(!e){editMaterialId=null;return;}
+  const d=state.deadlines.find(x=>x.id===did);if(!d){editMaterialId=null;return;}
+  const m=d.materials.find(x=>x.id===mid);if(!m){editMaterialId=null;return;}
+  const v=e.value.trim();
+  if(v)m.text=v;else d.materials=d.materials.filter(x=>x.id!==mid);
+  const tEl=document.getElementById("ct-"+mid);
+  if(tEl)m.target=tEl.value.trim();
+  editMaterialId=null;save();render();
+}
+function cancelMaterialEdit(){editMaterialId=null;render();}
+function moveMaterial(did,mid,dir){
+  const d=state.deadlines.find(x=>x.id===did);if(!d)return;
+  const i=d.materials.findIndex(x=>x.id===mid);
+  const j=i+dir;
+  if(i<0||j<0||j>=d.materials.length)return;
+  const tmp=d.materials[i];d.materials[i]=d.materials[j];d.materials[j]=tmp;
+  save();render();
+}
+function addMaterial(did){
+  const d=state.deadlines.find(x=>x.id===did);if(!d)return;
+  const e=document.getElementById("mi-"+did);if(!e)return;
+  const v=e.value.trim();if(!v){return;}
+  d.materials.push({id:uid(),text:v,done:false});save();render();
+}
+function delMaterial(did,mid){
+  const d=state.deadlines.find(x=>x.id===did);if(!d)return;
+  d.materials=d.materials.filter(x=>x.id!==mid);save();render();
+}
+function addDeadline(){
+  const t=document.getElementById("d-title").value.trim(),c=document.getElementById("d-course").value,
+        ty=document.getElementById("d-type").value,d=document.getElementById("d-date").value;
+  if(!t||!c||!d){alert("Fill in item, course and date.");return;}
+  state.deadlines.push({id:uid(),title:t,courseId:c,type:ty,date:d,readiness:0,desc:"",materials:[]});save();render();
+}
+
+function renderCourses(){
+  let h='<h1>Courses</h1><div class="sub">Colors, weekly goals and credits. Deleting a course keeps its sessions.</div><div class="panel" style="margin-bottom:16px">';
+  if(!state.courses.length)h+='<div class="empty">No courses yet.</div>';
+  state.courses.forEach(c=>{
+    const tot=state.sessions.filter(s=>s.courseId===c.id).reduce((a,s)=>a+s.minutes,0)/60;
+    h+='<div class="row"><input type="color" value="'+c.color+'" style="width:36px;padding:2px" onchange="setCourse(\''+c.id+'\',\'color\',this.value)">'+
+       '<input value="'+c.name+'" size="16" onchange="setCourse(\''+c.id+'\',\'name\',this.value)">'+
+       '<div><label>Goal h/week</label><input type="number" min="0" step="0.5" value="'+c.goal+'" style="width:70px" onchange="setCourse(\''+c.id+'\',\'goal\',+this.value)"></div>'+
+       '<div><label>Credits</label><input type="number" min="0" value="'+c.credits+'" style="width:60px" onchange="setCourse(\''+c.id+'\',\'credits\',+this.value)"></div>'+
+       '<div class="meta">'+tot.toFixed(1)+' h total</div><span class="del" onclick="delItem(\'courses\',\''+c.id+'\')">✕</span></div>';
+  });
+  h+='</div><div class="panel"><h3>Add course</h3><div class="form">'+
+    '<div><label>Name</label><input id="c-name" size="20" placeholder="Course name"></div>'+
+    '<div><label>Weekly goal (h)</label><input type="number" id="c-goal" min="0" step="0.5" value="6" style="width:80px"></div>'+
+    '<button class="btn" onclick="addCourse()">Add course</button></div></div>';
+  return h;
+}
+function setCourse(id,k,v){const c=course(id);if(c){c[k]=v;save();if(k!=="color")render();}}
+function addCourse(){
+  const n=document.getElementById("c-name").value.trim(),g=+document.getElementById("c-goal").value||0;
+  if(!n){alert("Give the course a name.");return;}
+  state.courses.push({id:uid(),name:n,color:PALETTE[state.courses.length%PALETTE.length],goal:g,credits:0});save();render();
+}
+
+function drawCharts(){
+  const dc=document.getElementById("chart-days"),pc=document.getElementById("chart-split");
+  if(!dc||!pc)return;
+  const t=todayStr(),days=[...Array(14)].map((_,i)=>addDays(t,i-13));
+  const vals=days.map(d=>minutesOn(d)/60),max=Math.max(1,...vals);
+  const T=tc();const ctx=dc.getContext("2d"),W=dc.width,H=dc.height,pad=34,bw=(W-pad-10)/14;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=T.grid;ctx.fillStyle=T.text;ctx.font="11px system-ui";ctx.textAlign="right";
+  for(let i=0;i<=4;i++){const y=H-24-(H-40)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-4,y);ctx.stroke();ctx.fillText((max*i/4).toFixed(1),pad-4,y+4);}
+  days.forEach((d,i)=>{
+    const bh=(H-40)*vals[i]/max,x=pad+i*bw+bw*0.15;
+    ctx.fillStyle=d===t?T.today:T.bar;
+    ctx.beginPath();ctx.roundRect(x,H-24-bh,bw*0.7,bh,3);ctx.fill();
+    ctx.fillStyle=T.text;ctx.textAlign="center";ctx.fillText(dLabel(d),x+bw*0.35,H-8);
+  });
+  const sctx=pc.getContext("2d"),R=88,cx=pc.width/2,cy=pc.height/2;
+  sctx.clearRect(0,0,pc.width,pc.height);
+  const tot=state.courses.map(c=>({c,m:state.sessions.filter(s=>s.courseId===c.id).reduce((a,s)=>a+s.minutes,0)})).filter(x=>x.m>0);
+  const sum=tot.reduce((a,x)=>a+x.m,0)||1;let ang=-Math.PI/2;
+  if(!tot.length){sctx.fillStyle=T.text;sctx.textAlign="center";sctx.fillText("No data yet",cx,cy);}
+  tot.forEach(x=>{const a2=ang+x.m/sum*2*Math.PI;
+    sctx.beginPath();sctx.moveTo(cx,cy);sctx.arc(cx,cy,R,ang,a2);sctx.closePath();sctx.fillStyle=x.c.color;sctx.fill();ang=a2;});
+  sctx.globalCompositeOperation="destination-out";sctx.beginPath();sctx.arc(cx,cy,R*0.55,0,7);sctx.fill();sctx.globalCompositeOperation="source-over";
+  let ly=cy+R+18;sctx.textAlign="left";sctx.font="11px system-ui";
+  tot.forEach(x=>{sctx.fillStyle=x.c.color;sctx.fillRect(cx-70,ly-9,10,10);sctx.fillStyle=T.legend;sctx.fillText(x.c.name+" "+(x.m/60).toFixed(1)+"h",cx-54,ly);ly+=15;});
+}
+
+function tc(){const l=document.body.classList.contains("light");
+  return l?{grid:"rgba(20,24,50,.08)",text:"#646a84",bar:"rgba(99,102,241,.3)",today:"#4f46e5",legend:"#1e2233"}
+          :{grid:"rgba(255,255,255,.08)",text:"#8b90a8",bar:"rgba(129,140,248,.35)",today:"#818cf8",legend:"#e8eaf6"};}
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  state.light=document.body.classList.contains("light");save();render();
+}
+function confetti(el){
+  const r=el&&el.getBoundingClientRect?el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const colors=["#6366f1","#a78bfa","#22d3ee","#34d399","#fbbf24","#f87171","#f472b6"];
+  for(let i=0;i<36;i++){
+    const p=document.createElement("div");p.className="confetti";
+    const a=Math.random()*2*Math.PI,d=60+Math.random()*120;
+    p.style.left=cx+"px";p.style.top=cy+"px";
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty("--dx",Math.cos(a)*d+"px");
+    p.style.setProperty("--dy",(Math.sin(a)*d-60)+"px");
+    p.style.setProperty("--rot",(Math.random()*720-360)+"deg");
+    p.style.animationDelay=(Math.random()*0.12)+"s";
+    p.style.animationDuration=(0.9+Math.random()*0.6)+"s";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1800);
+  }
+}
+const SKEY="studytrack_sync_v1";
+function syncCfg(){try{return JSON.parse(localStorage.getItem(SKEY))||{};}catch(e){return {};}}
+function syncSaveCfg(c){localStorage.setItem(SKEY,JSON.stringify(c));}
+function saveRaw(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+let syncPushTimer=null;
+function scheduleSyncPush(){
+  const cfg=syncCfg();
+  if(!cfg.token||!cfg.gistId||!cfg.pass)return;
+  cfg.dirty=true;syncSaveCfg(cfg);
+  if(syncPushTimer)clearTimeout(syncPushTimer);
+  syncPushTimer=setTimeout(()=>{syncPush().catch(()=>{});},3000);
+}
+function b64(buf){const b=new Uint8Array(buf);let s="";for(let i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s);}
+function ub64(str){const bin=atob(str);const b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b;}
+async function deriveKey(pass,salt){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt:enc.encode(salt),iterations:150000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+async function sealState(pass,rev){
+  const salt=b64(crypto.getRandomValues(new Uint8Array(16)));
+  const iv=b64(crypto.getRandomValues(new Uint8Array(12)));
+  const key=await deriveKey(pass,salt);
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv:ub64(iv)},key,new TextEncoder().encode(JSON.stringify(state)));
+  return JSON.stringify({app:"studytrack",v:1,rev:rev,updatedAt:new Date().toISOString(),salt:salt,iv:iv,ct:b64(ct)});
+}
+async function openState(pass,payload){
+  if(!payload||payload.app!=="studytrack")throw new Error("Dit is geen Study Track sync-bestand");
+  const key=await deriveKey(pass,payload.salt);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:ub64(payload.iv)},key,ub64(payload.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function ghReq(method,url,body){
+  const cfg=syncCfg();
+  let r;
+  try{
+    r=await fetch(url,{method:method,headers:{"Authorization":"Bearer "+cfg.token,"Accept":"application/vnd.github+json","Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  }catch(net){
+    throw new Error("Geen verbinding met GitHub mogelijk (internet uit? VPN/firewall/antivirus blokkeert? Adres in veld 3 klopt niet?). Technisch: "+(net&&net.message?net.message:String(net)));
+  }
+  if(!r.ok){
+    let why="";
+    let gh="";
+    try{const j=await r.json();gh=(j&&j.message)||"";}catch(e){}
+    if(r.status===401)why=" (token ongeldig of verlopen)";
+    else if(r.status===404)why=" (gist niet gevonden: check het Gist-ID)";
+    else if(r.status===403)why=" (toegang geweigerd: token-rechten of limiet)";
+    throw new Error("GitHub-fout "+r.status+why+(gh?" | GitHub zegt: "+gh:""));
+  }
+  return r.json();
+}
+async function syncVerifyToken(token){
+  // Informele check: sommige geldige gist-only tokens krijgen hier 401/403 op /user,
+  // terwijl de gist-endpoints prima werken. Daarom faalt dit nooit hard; de echte
+  // gist-aanroepen hieronder geven de echte fouten (inclusief verkeerd token).
+  try{
+    const r=await fetch("https://api.github.com/user",{headers:{"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json"}});
+    if(r.ok)return (await r.json()).login;
+    return null;
+  }catch(e){
+    throw new Error("Geen verbinding met GitHub mogelijk (internet? of een blokkade door VPN/firewall/antivirus). Probeer het nog eens en anders even zonder VPN.");
+  }
+}
+async function syncCreate(token,pass){
+  await syncVerifyToken(token);
+  const payload=await sealState(pass,1);
+  const data=await ghReq("POST","https://api.github.com/gists",{description:"Study Track sync (versleuteld)",files:{"study-track-data.json":{content:payload}},public:false});
+  syncSaveCfg({token:token,pass:pass,gistId:data.id,lastRevSeen:1,dirty:false,lastSync:new Date().toISOString()});
+  saveRaw();
+  return data.id;
+}
+function cleanGistId(v){
+  v=(v||"").trim();
+  const m=v.match(/[0-9a-f]{32}|[0-9a-f]{40}|[0-9a-fA-F]{20,}/);
+  if(m)return m[0];
+  const parts=v.split("/");
+  return parts[parts.length-1]||v;
+}
+async function syncConnect(token,gistId,pass){
+  gistId=cleanGistId(gistId);
+  await syncVerifyToken(token);
+  syncSaveCfg({token:token,pass:pass,gistId:gistId});
+  const raw=await ghReq("GET","https://api.github.com/gists/"+gistId);
+  const files=raw.files||{};
+  // voorkeur: ons eigen bestandsformaat, met welke naam dan ook
+  let name=Object.keys(files).find(k=>{try{return JSON.parse(files[k].content).app==="studytrack";}catch(e){return false;}});
+  if(!name){
+    // lege/placeholder gist (zoals een handmatig aangemaakte testgist): adopteren en vullen
+    if(Object.keys(files).length===1||Object.keys(files).length===0){
+      name=Object.keys(files)[0]||"study-track-data.json";
+      const payload=await sealState(pass,1);
+      await ghReq("PATCH","https://api.github.com/gists/"+gistId,{files:{[name]:{content:payload}}});
+      syncSaveCfg({token:token,pass:pass,gistId:gistId,fileName:name,lastRevSeen:1,dirty:false,lastSync:new Date().toISOString()});
+      saveRaw();
+      return true;
+    }
+    throw new Error("Deze gist bevat meerdere bestanden maar geen Study Track data. Maak een lege gist of plak het ID van een lege (1 bestand).");
+  }
+  syncSaveCfg({token:token,pass:pass,gistId:gistId,fileName:name});
+  const payload=JSON.parse(files[name].content);
+  const remote=await openState(pass,payload); // throws bij verkeerd wachtwoord
+  applyRemote(remote,payload.rev||1);
+  return true;
+}
+async function syncPush(){
+  const cfg=syncCfg();
+  if(!cfg.token||!cfg.gistId||!cfg.pass)return;
+  const rev=(cfg.lastRevSeen||0)+1;
+  const payload=await sealState(cfg.pass,rev);
+  await ghReq("PATCH","https://api.github.com/gists/"+cfg.gistId,{files:{[cfg.fileName||"study-track-data.json"]:{content:payload}}});
+  cfg.lastRevSeen=rev;cfg.dirty=false;cfg.lastSync=new Date().toISOString();syncSaveCfg(cfg);
+}
+async function syncPullRaw(){
+  const cfg=syncCfg();
+  if(!cfg.token||!cfg.gistId)return null;
+  const data=await ghReq("GET","https://api.github.com/gists/"+cfg.gistId);
+  const files=data.files||{};
+  const name=cfg.fileName||Object.keys(files).find(k=>k==="study-track-data.json")||Object.keys(files).find(k=>{try{return JSON.parse(files[k].content).app==="studytrack";}catch(e){return false;}});
+  if(!name)return null;
+  const rawc=files[name]&&files[name].content;
+  if(!rawc)return null;
+  return JSON.parse(rawc);
+}
+function applyRemote(remote,rev){
+  const light=state.light;
+  state=remote;if(light)state.light=light;
+  const cfg=syncCfg();cfg.lastRevSeen=rev;cfg.dirty=false;cfg.lastSync=new Date().toISOString();syncSaveCfg(cfg);
+  saveRaw();render();
+}
+async function syncNow(silent){
+  const cfg=syncCfg();
+  if(!cfg.token||!cfg.gistId||!cfg.pass){if(!silent)go("sync");return;}
+  if(!silent)syncBusy("Synchroniseren met GitHub...");
+  try{
+    const payload=await syncPullRaw();
+    if(!payload){await syncPush();if(!silent)syncOk("Lege gist gevuld met jouw data");return;}
+    const R=payload.rev||1;
+    const remote=await openState(cfg.pass,payload);
+    const dirty=!!cfg.dirty;
+    if(R>(cfg.lastRevSeen||0)){
+      if(dirty){
+        if(silent){await syncPush();}
+        else if(confirm("Er zijn wijzigingen op dit apparaat EN in de cloud.\n\nOK = cloud overschrijven met dit apparaat\nAnnuleren = cloud laden (lokale wijzigingen gaan dan weg)")){
+          await syncPush();syncOk("Cloud overschreven met dit apparaat");
+        }else{
+          applyRemote(remote,R);syncOk("Cloud geladen; lokale wijzigingen zijn verworpen");
+        }
+      }else{
+        applyRemote(remote,R);
+        if(!silent)syncOk("Bijgewerkt vanuit de cloud");
+      }
+    }else if(dirty){
+      await syncPush();
+      if(!silent)syncOk("Verzonden naar de cloud");
+    }else{
+      cfg.lastSync=new Date().toISOString();syncSaveCfg(cfg);
+      if(!silent)syncOk("Alles is al up-to-date");
+    }
+  }catch(e){
+    if(!silent)syncErr(e.message||String(e));
+  }
+}
+function syncBusy(t){syncStatusEl(t,"");}
+function syncOk(t){syncStatusEl(t,"ok");}
+function syncErr(t){syncStatusEl(t,"err");}
+function syncStatusEl(t,cls){
+  const el=document.getElementById("sync-status");
+  if(el){el.textContent=t;el.className="syncstat "+cls;}
+}
+function renderSync(){
+  const cfg=syncCfg();
+  let h='<h1>Sync</h1><div class="sub">Koppel je GitHub-account: je data wordt versleuteld (AES) en gebackupped naar een privé-Gist. Andere apparaten halen hem daar op met dezelfde drie gegevens.</div>';
+  h+='<div class="panel syncwrap">';
+  if(!cfg.token||!cfg.gistId||!cfg.pass){
+    h+='<div class="form">';
+    h+='<div><label>1. GitHub Personal Access Token (met gist-rechten)</label><input id="sync-token" type="password" placeholder="ghp_..." style="width:100%" oninput="syncTokenHint()"><div class="nmeta" id="sync-token-hint">Je ziet nu 0 tekens.</div><button type="button" class="btn secondary" style="margin-top:6px;font-size:12px" onclick="toggleTokenView()">Toon eerste/laatste 4 tekens</button></div>';
+    h+='<div><label>2. Sync-wachtwoord (versleutelt je data; onthoud het goed)</label><input id="sync-pass" type="password" placeholder="een sterk wachtwoord" style="width:100%"></div>';
+    h+='<div><label>3. Bestaand Gist-ID (leeg laten voor een nieuwe)</label><input id="sync-gist" type="text" placeholder="bijv. 1a2b3c4d... (staat in de gist-URL)" style="width:100%"></div>';
+    h+='</div>';
+    h+='<div class="syncrow"><button class="btn primary" onclick="syncSetup()">Koppelen</button></div>';
+    h+='<div class="syncstat" id="sync-status">Hoe maak je een token: GitHub > Settings > Developer settings > Personal access tokens > Generate new token, vink "gists" aan. De token blijft lokaal in je browser.</div>';
+  }else{
+    h+='<div class="nmeta" style="margin-bottom:8px">Gekoppeld · Gist-ID: '+esc(cfg.gistId)+' · '+(cfg.lastSync?"laatste sync: "+esc(cfg.lastSync.slice(0,16).replace("T"," ")):"nog nooit gesynced")+'</div>';
+    h+='<div class="syncrow"><button class="btn primary" onclick="syncNow(false)">Nu synchroniseren</button>';
+    h+='<button class="btn secondary" onclick="syncDisconnect()">Ontkoppelen</button></div>';
+    h+='<div class="syncstat" id="sync-status">Na elke wijziging wordt er automatisch (na 3 sec) gesynced; bij het openen van de app wordt de cloud gecheckt.</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function syncTokenHint(){
+  const el=document.getElementById("sync-token-hint");
+  const f=document.getElementById("sync-token");
+  if(!el||!f)return;
+  const v=f.value.replace(/\s+/g,"");
+  el.textContent="Je ziet nu "+v.length+" tekens."+(v.indexOf("ghp_")===0?" (begint met ghp_)":(v.length?" (begint niet met ghp_: check de kopie)":""));
+}
+function toggleTokenView(){
+  const f=document.getElementById("sync-token");
+  if(!f)return;
+  const v=f.value.replace(/\s+/g,"");
+  if(!v.length){syncErr("Er staat niets in het tokenveld.");return;}
+  const head=v.slice(0,4),tail=v.slice(-4);
+  syncOk("Token: "+head+" ... "+tail+" ("+v.length+" tekens). Vergelijk dit met je token op GitHub.");
+}
+async function syncSetup(){
+  const token=document.getElementById("sync-token").value.replace(/\s+/g,"");
+  const pass=document.getElementById("sync-pass").value;
+  const gist=document.getElementById("sync-gist").value.trim();
+  if(!token||!pass){syncErr("Vul minimaal een token en wachtwoord in.");return;}
+  if(token.indexOf("ghp_")!==0&&token.indexOf("github_pat_")!==0){syncErr("Dit lijkt geen GitHub-token: hij moet beginnen met ghp_ (classic). Gebruik 'Toon eerste/laatste 4 tekens' om te zien wat er nu staat.");return;}
+  if(token.indexOf("ghp_")===0&&token.length!==40){syncErr("De token is "+token.length+" tekens; een classic-token is precies 40. Kopieer opnieuw met het kopieer-icoontje op GitHub.");return;}
+  syncBusy("Verbinden met GitHub...");
+  try{
+    let id;
+    if(gist){await syncConnect(token,gist,pass);id=gist;}
+    else{id=await syncCreate(token,pass);}
+    syncOk("Gekoppeld! Gist-ID: "+id+" (noteer dit voor je andere apparaat)");
+    setTimeout(()=>{if(view==="sync")render();},2500);
+  }catch(e){syncErr(e.message||String(e));}
+}
+function syncDisconnect(){
+  if(!confirm("Sync ontkoppelen? Je data blijft gewoon in deze browser staan."))return;
+  localStorage.removeItem(SKEY);
+  render();
+}
+function exportData(){
+  const data=JSON.stringify(state,null,2);
+  const stamp=new Date().toISOString().slice(0,10);
+  const fname="study-track-backup-"+stamp+".json";
+  const blob=new Blob([data],{type:"application/json"});
+  const file=new File([blob],fname,{type:"application/json"});
+  const share=async()=>{
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:"Study Track backup"});return true;
+      }
+    }catch(e){if(e&&e.name==="AbortError")return true;}
+    return false;
+  };
+  (async()=>{
+    if(window.isSecureContext){
+      const shared=await share();
+      if(shared)return;
+      if(navigator.clipboard&&navigator.clipboard.write){
+        try{await navigator.clipboard.writeText(data);alert("Backup is gekopieerd naar je klembord. Plak hem in een appje, mail of notitie om te delen.");return;}catch(e){}
+      }
+    }
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();
+  })();
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.courses)throw 0;
+    if(!d.sessions)d.sessions=[];
+    if(!d.blocks)d.blocks=[];
+    if(!d.deadlines)d.deadlines=[];
+    if(!d.weekplan)d.weekplan=JSON.parse(JSON.stringify(WPS));
+    if(!d.semStart)d.semStart='2026-11-09';
+    if(!d.notes)d.notes=buildNotesSeed();
+    if(!d.lastModified)delete d.lastModified;
+    d.seq=d.seq||1000;
+    const merge=confirm("OK = MERGE: add this file's courses and deadlines to your current data (recommended for subject imports).\nCancel = REPLACE everything with this file.");
+    if(!merge){state=d;save();try{go("today");}catch(re){alert("Imported: data replaced. Let op: een schermfout is er nog, maar je data staat erin. Melding: "+(re&&re.message?re.message:String(re)));return;}alert("Imported: data replaced.");return;}
+    (d.courses||[]).forEach(c=>{
+      const ex=state.courses.find(x=>x.name.toLowerCase()===c.name.toLowerCase());
+      if(ex){if(!ex.goal&&c.goal)ex.goal=c.goal;if(!ex.credits&&c.credits)ex.credits=c.credits;}
+      else state.courses.push(c);
+    });
+    (d.deadlines||[]).forEach(nd=>{
+      if(nd.desc===undefined)nd.desc="";if(!nd.materials)nd.materials=[];
+      const ex=state.deadlines.find(x=>x.title.toLowerCase()===nd.title.toLowerCase()&&x.date===nd.date);
+      if(!ex)state.deadlines.push(nd);
+    });
+    (d.sessions||[]).forEach(s2=>{
+      if(!state.sessions.find(x=>x.date===s2.date&&x.courseId===s2.courseId&&x.activity===s2.activity&&x.minutes===s2.minutes))state.sessions.push(s2);
+    });
+    (d.blocks||[]).forEach(b=>{
+      if(!state.blocks.find(x=>x.date===b.date&&x.start===b.start&&x.end===b.end&&x.courseId===b.courseId&&x.activity===b.activity))state.blocks.push(b);
+    });
+    save();try{go("today");}catch(re){}alert("Merged: new courses and deadlines added, duplicates skipped. Your planner, sessions and settings are untouched.");
+  }catch(e){
+    let info="";
+    try{
+      const d=JSON.parse(r.result);
+      const keys=Object.keys(d).join(", ");
+      const n=(d.courses||[]).length;
+      info=" Het bestand bevat: ["+keys+"]"+(n?" met "+n+" vakken.":" (geen vakkenlijst gevonden).");
+    }catch(e2){info=" Het bestand is geen leesbare JSON (mogelijk een ander bestandstype gekozen).";}
+    alert("Not a valid Study Track backup file."+info+"\n\nTechnisch: "+(e&&e.message?e.message:String(e)));
+  }};
+  r.readAsText(f);inp.value="";
+}
+function resetData(){if(confirm("Reset all data back to the sample? This cannot be undone.")){state=seed();save();go("dashboard");}}
+
+
+load();go("today");
+(function(){const cfg=syncCfg();if(!(cfg.token&&cfg.gistId&&cfg.pass))return;
+  setTimeout(async()=>{try{
+    const payload=await syncPullRaw();if(!payload)return;
+    const R=payload.rev||1;
+    if(R>(cfg.lastRevSeen||0)&&!cfg.dirty){
+      const remote=await openState(cfg.pass,payload);
+      applyRemote(remote,R);
+    }
+  }catch(e){}},1500);
+})();
+</script>
+</body>
+</html>
