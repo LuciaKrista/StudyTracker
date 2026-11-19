@@ -213,7 +213,7 @@
 <body>
 <div id="app">
   <nav>
-    <div class="logo">Study Track <span style="font-size:10px;vertical-align:super;opacity:.55">v3</span></div>
+    <div class="logo">Study Track <span style="font-size:10px;vertical-align:super;opacity:.55">v4</span></div>
     <button id="nav-today" onclick="go('today')">Today</button>
     <button id="nav-week" onclick="go('week')">Weekplan</button>
     <button id="nav-rooster" onclick="go('rooster')">Rooster</button>
@@ -717,28 +717,65 @@ function delNote(nid){
   save();render();
 }
 
-function renderDashboard(){
-  const t=todayStr(),mon=mondayOf(t);
-  const today=minutesOn(t)/60, wk=weekHours(mon)/60, lw=weekHours(addDays(mon,-7))/60;
-  const st=currentStreak(),blocks=state.blocks.filter(b=>b.date>=mon&&b.date<addDays(mon,7));
-  const done=blocks.filter(b=>b.done).length;
-  let h='<h1>Dashboard</h1><div class="sub">Your study activity at a glance</div><div class="cards">';
-  h+=stat("Hours today",today.toFixed(1)+"h","goal pace: keep going");
-  h+=stat("This week",wk.toFixed(1)+"h","last week: "+lw.toFixed(1)+"h");
-  h+=stat("Streak",st+" days","longest: "+longestStreak()+" days");
-  h+=stat("Planner done",blocks.length?Math.round(done/blocks.length*100)+"%":"-","done: "+done+" / "+blocks.length+" blocks");
-  h+=stat("Total hours",(state.sessions.reduce((a,s)=>a+s.minutes,0)/60).toFixed(1)+"h",state.sessions.length+" sessions");
-  h+=stat("XP",xp(),"10 XP per hour");
-  h+='</div><div class="grid2"><div class="panel"><h3>Hours per day (last 14 days)</h3><canvas id="chart-days" width="640" height="240"></canvas></div>';
-  h+='<div class="panel"><h3>Where your time goes</h3><canvas id="chart-split" width="300" height="240"></canvas></div></div>';
-  h+='<div class="panel" style="margin-bottom:16px"><h3>Weekly goal progress</h3>';
-  if(!state.courses.length)h+='<div class="empty">Add courses first.</div>';
-  state.courses.forEach(c=>{
-    const w=state.sessions.filter(s=>s.courseId===c.id&&s.date>=mon&&s.date<addDays(mon,7)).reduce((a,s)=>a+s.minutes,0)/60;
-    const p=c.goal>0?Math.min(w/c.goal,1):0;
-    h+='<div class="row"><span class="swatch" style="background:'+c.color+'"></span><div class="name">'+c.name+'</div><div class="bar"><span style="width:'+Math.round(p*100)+'%;background:'+c.color+'"></span></div><div class="meta">'+w.toFixed(1)+' / '+c.goal+' h</div></div>';
+function wpWeekItems(cur){
+  const out=[];
+  state.weekplan.forEach(w=>{
+    if(w.later||w.week!==cur)return;
+    w.ls.forEach(l=>l.p.forEach(p=>out.push({p:p,courseId:w.courseId})));
   });
-  h+='</div><div class="panel"><h3>Upcoming deadlines</h3>'+deadlineTable(true)+'</div>';
+  return out;
+}
+function renderDashboard(){
+  const t=todayStr(),cur=currentWeekLabel();
+  const isKerst=cur==="Kerstvakantie";
+  let h='<h1>Dashboard</h1><div class="sub">Jouw week in een oogopslag</div>';
+  if(isKerst){
+    h+='<div class="empty">Kerstvakantie: geen planning deze week. Alles blijft bewaard en de sync loopt door.</div>';
+    h+='<div class="panel"><h3>Deadlines na de vakantie</h3>'+deadlineTable(true)+'</div>';
+    return h;
+  }
+  const items=wpWeekItems(cur);
+  const done=items.filter(x=>x.p.done).length;
+  const pct=items.length?Math.round(done/items.length*100):0;
+  const dl=state.deadlines.filter(d=>!isLater(d));
+  const overdue=dl.filter(d=>Math.round((parseD(d.date)-parseD(t))/86400000)<0).length;
+  const thisweek=dl.filter(d=>{const x=Math.round((parseD(d.date)-parseD(t))/86400000);return x>=0&&x<=7;}).length;
+  let notesFilled=0,notesTotal=0;
+  (state.notes||[]).forEach(f=>f.children.forEach(sub=>{notesTotal++;if(sub.notes.some(n=>(n.text||"").trim()))notesFilled++;}));
+  let totalDone=0,totalAll=0;
+  state.weekplan.forEach(w=>{if(w.later)return;w.ls.forEach(l=>l.p.forEach(p=>{totalAll++;if(p.done)totalDone++;}));});
+  h+='<div class="cards">';
+  h+=stat("Week "+cur,pct+"%",done+" / "+items.length+" taken afgevinkt");
+  h+=stat("Deadlines",thisweek+" deze week",(overdue?overdue+" overdue!":"niets overduig"));
+  h+=stat("Notes gevuld",notesFilled+" / "+notesTotal+" weken","college-weken met aantekeningen");
+  h+=stat("Totaal afgevinkt",totalDone+" / "+totalAll,"hele kwartiel");
+  h+='</div>';
+  h+='<div class="panel"><h3>Voortgang week '+cur+' per vak</h3>';
+  const perCourse={};
+  items.forEach(x=>{
+    if(!perCourse[x.courseId])perCourse[x.courseId]={done:0,total:0};
+    perCourse[x.courseId].total++;
+    if(x.p.done)perCourse[x.courseId].done++;
+  });
+  let any=false;
+  state.courses.forEach(c=>{
+    const pc=perCourse[c.id];
+    if(!pc)return;
+    any=true;
+    const p=pc.total?Math.round(pc.done/pc.total*100):0;
+    h+='<div class="row"><span class="swatch" style="background:'+c.color+'"></span><div class="name">'+esc(c.name)+'</div><div class="bar"><span style="width:'+p+'%;background:'+c.color+'"></span></div><div class="meta">'+pc.done+' / '+pc.total+'</div></div>';
+  });
+  if(!any)h+='<div class="empty">Geen planning voor week '+esc(cur)+'. Check de Weekplan-tab.</div>';
+  h+='</div>';
+  h+='<div class="panel"><h3>Deadlines op komst</h3>'+deadlineTable(true)+'</div>';
+  h+='<div class="panel"><h3>Aantekeningen</h3>';
+  (state.notes||[]).forEach(f=>{
+    const col=course(f.courseId);
+    const filled=f.children.filter(sub=>sub.notes.some(n=>(n.text||"").trim())).length;
+    h+='<div class="row"><span class="swatch" style="background:'+(col?col.color:"#64748b")+'"></span><div class="name">'+esc(f.label)+'</div><div class="bar"><span style="width:'+Math.round(filled/(f.children.length||1)*100)+'%;background:'+(col?col.color:"#64748b")+'"></span></div><div class="meta">'+filled+' / '+f.children.length+' weken</div></div>';
+  });
+  if(!(state.notes||[]).length)h+='<div class="empty">Nog geen notes-mappen. Die verschijnen zodra je in de Notes-tab typt.</div>';
+  h+='</div>';
   return h;
 }
 
@@ -1122,33 +1159,7 @@ function addCourse(){
   state.courses.push({id:uid(),name:n,color:PALETTE[state.courses.length%PALETTE.length],goal:g,credits:0});save();render();
 }
 
-function drawCharts(){
-  const dc=document.getElementById("chart-days"),pc=document.getElementById("chart-split");
-  if(!dc||!pc)return;
-  const t=todayStr(),days=[...Array(14)].map((_,i)=>addDays(t,i-13));
-  const vals=days.map(d=>minutesOn(d)/60),max=Math.max(1,...vals);
-  const T=tc();const ctx=dc.getContext("2d"),W=dc.width,H=dc.height,pad=34,bw=(W-pad-10)/14;
-  ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle=T.grid;ctx.fillStyle=T.text;ctx.font="11px system-ui";ctx.textAlign="right";
-  for(let i=0;i<=4;i++){const y=H-24-(H-40)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-4,y);ctx.stroke();ctx.fillText((max*i/4).toFixed(1),pad-4,y+4);}
-  days.forEach((d,i)=>{
-    const bh=(H-40)*vals[i]/max,x=pad+i*bw+bw*0.15;
-    ctx.fillStyle=d===t?T.today:T.bar;
-    ctx.beginPath();ctx.roundRect(x,H-24-bh,bw*0.7,bh,3);ctx.fill();
-    ctx.fillStyle=T.text;ctx.textAlign="center";ctx.fillText(dLabel(d),x+bw*0.35,H-8);
-  });
-  const sctx=pc.getContext("2d"),R=88,cx=pc.width/2,cy=pc.height/2;
-  sctx.clearRect(0,0,pc.width,pc.height);
-  const tot=state.courses.map(c=>({c,m:state.sessions.filter(s=>s.courseId===c.id).reduce((a,s)=>a+s.minutes,0)})).filter(x=>x.m>0);
-  const sum=tot.reduce((a,x)=>a+x.m,0)||1;let ang=-Math.PI/2;
-  if(!tot.length){sctx.fillStyle=T.text;sctx.textAlign="center";sctx.fillText("No data yet",cx,cy);}
-  tot.forEach(x=>{const a2=ang+x.m/sum*2*Math.PI;
-    sctx.beginPath();sctx.moveTo(cx,cy);sctx.arc(cx,cy,R,ang,a2);sctx.closePath();sctx.fillStyle=x.c.color;sctx.fill();ang=a2;});
-  sctx.globalCompositeOperation="destination-out";sctx.beginPath();sctx.arc(cx,cy,R*0.55,0,7);sctx.fill();sctx.globalCompositeOperation="source-over";
-  let ly=cy+R+18;sctx.textAlign="left";sctx.font="11px system-ui";
-  tot.forEach(x=>{sctx.fillStyle=x.c.color;sctx.fillRect(cx-70,ly-9,10,10);sctx.fillStyle=T.legend;sctx.fillText(x.c.name+" "+(x.m/60).toFixed(1)+"h",cx-54,ly);ly+=15;});
-}
-
+function drawCharts(){}
 function tc(){const l=document.body.classList.contains("light");
   return l?{grid:"rgba(20,24,50,.08)",text:"#646a84",bar:"rgba(99,102,241,.3)",today:"#4f46e5",legend:"#1e2233"}
           :{grid:"rgba(255,255,255,.08)",text:"#8b90a8",bar:"rgba(129,140,248,.35)",today:"#818cf8",legend:"#e8eaf6"};}
